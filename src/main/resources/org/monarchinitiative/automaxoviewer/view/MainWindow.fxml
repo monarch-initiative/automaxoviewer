@@ -1,78 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
-
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
-
-<BorderPane prefHeight="1000.0" prefWidth="1400.0"
-            xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.monarchinitiative.automaxoviewer.controller.MainWindowController">
+<BorderPane prefHeight="1000.0" prefWidth="1400.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.monarchinitiative.automaxoviewer.controller.MainWindowController">
     <top>
-        <MenuBar prefHeight="23.0" prefWidth="1200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                 AnchorPane.topAnchor="0.0">
+        <MenuBar prefHeight="23.0" prefWidth="1200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <Menu mnemonicParsing="false" text="File">
-                <MenuItem mnemonicParsing="false" text="Open" fx:id="newMenuItem"/>
-                <MenuItem mnemonicParsing="false" text="Exit" onAction="#exitGui" fx:id="exitMenuItem"/>
+                <MenuItem fx:id="newMenuItem" mnemonicParsing="false" text="Open" />
+                <MenuItem fx:id="exitMenuItem" mnemonicParsing="false" onAction="#exitGui" text="Exit" />
             </Menu>
             <Menu mnemonicParsing="false" text="Edit">
-                <MenuItem mnemonicParsing="false" onAction="#optionsAction" fx:id="optionsMenuItem" text="Options"/>
-                <MenuItem mnemonicParsing="false" onAction="#showVersionsAction" fx:id="showVersionsMenuItem" text="Show version"/>
+                <MenuItem fx:id="optionsMenuItem" mnemonicParsing="false" onAction="#optionsAction" text="Options" />
+                <MenuItem fx:id="showVersionsMenuItem" mnemonicParsing="false" onAction="#showVersionsAction" text="Show version" />
             </Menu>
-            <Menu mnemonicParsing="false" fx:id="templatesMenu" text="Templates"></Menu>
+            <Menu fx:id="templatesMenu" mnemonicParsing="false" text="Templates" />
             <Menu mnemonicParsing="false" text="Help">
-                <MenuItem mnemonicParsing="false" text="About"/>
+                <MenuItem mnemonicParsing="false" text="About" />
             </Menu>
         </MenuBar>
     </top>
     <left>
-        <Label >Label</Label>
+        <Label>Label</Label>
     </left>
     <center>
-        <VBox prefHeight="977.0" prefWidth="300"
-              AnchorPane.bottomAnchor="0.0"
-              AnchorPane.rightAnchor="0.0"
-              AnchorPane.topAnchor="27.0">
-            <TableView fx:id="robotTableView" layoutX="197.0" layoutY="28.0" prefHeight="300.0" minHeight="250"
-                       prefWidth="1004.0"
-                       AnchorPane.leftAnchor="196.0"
-                       AnchorPane.rightAnchor="0.0"
-                       AnchorPane.topAnchor="207.0">
+        <VBox prefHeight="977.0" prefWidth="300" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0">
+            <TableView fx:id="robotTableView" layoutX="197.0" layoutY="28.0" minHeight="250" prefHeight="300.0" prefWidth="1004.0" AnchorPane.leftAnchor="196.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="207.0">
                 <columns>
-                    <TableColumn fx:id="newTermLabelCol" prefWidth="75.0" text="New Term"/>
-                    <TableColumn fx:id="definitionCol" prefWidth="75.0" text="Definition"/>
-                    <TableColumn fx:id="parentTermCol" prefWidth="75.0" text="Parent Term (s)"/>
-                    <TableColumn fx:id="pmidsCol" prefWidth="75.0" text="PMID(s)"/>
-                    <TableColumn fx:id="issueCol" prefWidth="75.0" text="Issue"/>
+                    <TableColumn fx:id="newTermLabelCol" prefWidth="75.0" text="New Term" />
+                    <TableColumn fx:id="definitionCol" prefWidth="75.0" text="Definition" />
+                    <TableColumn fx:id="parentTermCol" prefWidth="75.0" text="Parent Term (s)" />
+                    <TableColumn fx:id="pmidsCol" prefWidth="75.0" text="PMID(s)" />
+                    <TableColumn fx:id="issueCol" prefWidth="75.0" text="Issue" />
                 </columns>
 
             </TableView>
 
-            <VBox prefHeight="600" prefWidth="1400" xmlns="http://javafx.com/javafx/21"
-                  xmlns:fx="http://javafx.com/fxml/1"
-                  AnchorPane.leftAnchor="300.0"
-                  AnchorPane.rightAnchor="0"
-                  AnchorPane.topAnchor="350"
-                  AnchorPane.bottomAnchor="0.0">
+            <VBox prefHeight="600" prefWidth="1400" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="300.0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="350" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
                 <padding>
                     <Insets topRightBottomLeft="20" />
                 </padding>
-                <Label >Label VBOX</Label>
+                <HBox prefHeight="100.0" prefWidth="200.0">
+                    <Label text="Setup VBOX">
+                        <HBox.margin>
+                            <Insets bottom="10.0" left="10.0" right="10.0" top="20.0"/>
+                        </HBox.margin>
+                    </Label>
+                    <Button mnemonicParsing="false" onAction="#openAutoMAxO" text="Open AutoMAxO">
+                        <HBox.margin>
+                            <Insets bottom="10.0" left="10.0" right="10.0" top="20.0"/>
+                        </HBox.margin>
+                    </Button>
+                </HBox>
             </VBox>
 
-                <WebView fx:id="currentRobotView"/>
+                <WebView fx:id="currentRobotView" />
         </VBox>
     </center>
     <bottom>
-        <VBox fx:id="statusBar"
-              AnchorPane.leftAnchor="0.0"
-              AnchorPane.rightAnchor="0.0"
-              AnchorPane.bottomAnchor="0.0">
+        <VBox fx:id="statusBar" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <Label fx:id="statusBarLabel">Starting...</Label>
         </VBox>
     </bottom>

@@ -1,33 +1,23 @@
 package org.monarchinitiative.automaxoviewer.controller;
 
 import javafx.application.HostServices;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.binding.IntegerBinding;
 import javafx.beans.property.*;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
-import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.stage.Stage;
-import javafx.util.Callback;
 import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
+import org.monarchinitiative.automaxoviewer.model.AutoMaxoItem;
 import org.monarchinitiative.automaxoviewer.view.ViewFactory;
 
-import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.slf4j.Logger;
@@ -38,7 +28,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 public class MainWindowController extends BaseController implements Initializable {
     private final Logger LOGGER = LoggerFactory.getLogger(MainWindowController.class);
@@ -469,5 +458,19 @@ public class MainWindowController extends BaseController implements Initializabl
             hpo_json_version = opt.orElse("could not retrieve version");
         }
         PopUps.alertDialog("hp.json version", String.format("hp.json: %s", hpo_json_version));
+    }
+
+    public void openAutoMAxO(ActionEvent actionEvent) {
+        File automaxoFile = PopUps.selectFileToOpen(null, new File("."), "AutoMAxO file" );
+        if (automaxoFile != null && automaxoFile.isFile()) {
+            List<AutoMaxoItem> items = AutoMaxoItem.parseAutoMaxoItems(automaxoFile);
+            for (var i:items) {
+                System.out.println(i);
+            }
+            System.out.printf("Got %d automaxo items", items.size());
+        } else {
+            System.out.println("Could not get itmes");
+        }
+
     }
 }

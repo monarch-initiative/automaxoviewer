@@ -72,12 +72,12 @@ public class FileDownloader {
      */
     public File copyURLToFile(URL src, File dest)  {
         if (dest.exists()) {
-            logger.warn("Overwriting file at " + dest);
+            logger.warn("Overwriting file at {}", dest);
         }
-        logger.trace("copyURLToFile dest=" + dest);
-        logger.trace("dest.getParentFile()=" + dest.getParentFile());
+        logger.trace("copyURLToFile dest={}", dest);
+        logger.trace("dest.getParentFile()={}", dest.getParentFile());
         if (!dest.getParentFile().exists()) {
-            logger.info("Creating directory {}" + dest.getParentFile().getAbsolutePath());
+            logger.info("Creating directory {}", dest.getParentFile().getAbsolutePath());
             dest.getParentFile().mkdirs();
         }
 

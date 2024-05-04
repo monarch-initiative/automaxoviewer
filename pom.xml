@@ -10,7 +10,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <javafx.version>21.0.1</javafx.version>
         <phenol.version>2.0.4</phenol.version>
-        <juunit-jupiter.version>5.10.1</juunit-jupiter.version>
+        <junit-jupiter.version>5.10.2</junit-jupiter.version>
         <slf4j.version>2.0.9</slf4j.version>
         <jackson.version>2.15.1</jackson.version>
     </properties>
@@ -89,13 +89,20 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>${juunit-jupiter.version}</version>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-params -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>${juunit-jupiter.version}</version>
+            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
 

@@ -1,0 +1,93 @@
+{
+  "triplets": [
+    {
+      "triplet": {
+        "maxo": "None",
+        "maxo_label": "",
+        "non_grounded_maxo": "iron chelation therapy",
+        "potential_maxo": [],
+        "relationship": "treats",
+        "hpo": "None",
+        "hpo_label": "",
+        "non_grounded_hpo": "overloading the body with iron",
+        "potential_hpo": [],
+        "mondo": "mondo:0011382",
+        "mondo_label": "sickle cell disease",
+        "non_grounded_mondo": "None",
+        "potential_mondo": [],
+        "maxo_qualifier": "with deferasirox",
+        "chebi": "chebi:49005",
+        "hpo_extension": ""
+      },
+      "count": 1,
+      "source": {
+        "36069257": {
+          "text": "Iron Chelators, Such as Deferasirox, When Combined With Hydroxyurea, Provide an Additional Benefit of Iron Chelation in Patients Receiving Chronic Transfusion Therapy. Red blood cell (RBC) transfusions have been established as one of the primary therapies in treating sickle cell anemia. However, they are not free of side effects, with overloading the body with iron being one of the most important. Iron chelation therapy greatly reduces the iron load of the body. In addition, hydroxyurea (HU), an oral chemotherapeutic drug also has a significant role in the treatment of the disease with beneficial effects on many of the clinical problems that arise, mainly in reducing painful crises. The aim of this study was to investigate the effect of synergistic transfusion therapy and HU on the response to deferasirox (DFX) chelation therapy. Eighteen patients with sickle cell disease were divided into two groups based on their treatment, either with simple transfusions and DFX or with a combination of transfusion therapy, DFX and HU, and were evaluated with magnetic resonance imaging (MRI) for liver iron concentration (LIC) and biochemistry. All patients completed the study. The results of the study showed improvement in serum ferritin (FER) levels and LIC after 12 months of therapy in both groups, especially in the group receiving the combination therapy with HU. In addition, there was a noteworthy improvement in serum glutamic-oxaloacetic transaminase (SGOT), serum glutamic pyruvic transaminase (SGPT) and lactate dehydrogenase (LDH) levels with serum creatinine (Cr) levels remaining stable during the study in both groups. Hydroxyurea, when combined with iron chelators such as DFX, provides an additional benefit of iron chelation in patients receiving chronic transfusion therapy.",
+          "mesh_info": {
+            "D015913": "Chelation Therapy"
+          }
+        }
+      }
+    },
+    {
+      "triplet": {
+        "maxo": "None",
+        "maxo_label": "",
+        "non_grounded_maxo": "iron chelation therapy",
+        "potential_maxo": [],
+        "relationship": "treats",
+        "hpo": "None",
+        "hpo_label": "",
+        "non_grounded_hpo": "toxicity",
+        "potential_hpo": [],
+        "mondo": "None",
+        "mondo_label": "",
+        "non_grounded_mondo": "excess iron deposition (eid)",
+        "potential_mondo": [],
+        "maxo_qualifier": "",
+        "chebi": "chebi:68554",
+        "hpo_extension": ""
+      },
+      "count": 1,
+      "source": {
+        "38069073": {
+          "text": "Drug Selection and Posology, Optimal Therapies and Risk/Benefit Assessment in Medicine: The Paradigm of Iron-Chelating Drugs. The design of clinical protocols and the selection of drugs with appropriate posology are critical parameters for therapeutic outcomes. Optimal therapeutic protocols could ideally be designed in all diseases including for millions of patients affected by excess iron deposition (EID) toxicity based on personalised medicine parameters, as well as many variations and limitations. EID is an adverse prognostic factor for all diseases and especially for millions of chronically red-blood-cell-transfused patients. Differences in iron chelation therapy posology cause disappointing results in neurodegenerative diseases at low doses, but lifesaving outcomes in thalassemia major (TM) when using higher doses. In particular, the transformation of TM from a fatal to a chronic disease has been achieved using effective doses of oral deferiprone (L1), which improved compliance and cleared excess toxic iron from the heart associated with increased mortality in TM. Furthermore, effective L1 and L1/deferoxamine combination posology resulted in the complete elimination of EID and the maintenance of normal iron store levels in TM. The selection of effective chelation protocols has been monitored by MRI T2* diagnosis for EID levels in different organs. Millions of other iron-loaded patients with sickle cell anemia, myelodysplasia and haemopoietic stem cell transplantation, or non-iron-loaded categories with EID in different organs could also benefit from such chelation therapy advances. Drawbacks of chelation therapy include drug toxicity in some patients and also the wide use of suboptimal chelation protocols, resulting in ineffective therapies. Drug metabolic effects, and interactions with other metals, drugs and dietary molecules also affected iron chelation therapy. Drug selection and the identification of effective or optimal dose protocols are essential for positive therapeutic outcomes in the use of chelating drugs in TM and other iron-loaded and non-iron-loaded conditions, as well as general iron toxicity.",
+          "mesh_info": {
+            "D015913": "Chelation Therapy",
+            "D004359": "Drug Therapy, Combination"
+          }
+        }
+      }
+    },
+    {
+      "triplet": {
+        "maxo": "None",
+        "maxo_label": "",
+        "non_grounded_maxo": "iron chelation therapy",
+        "potential_maxo": [],
+        "relationship": "treats",
+        "hpo": "None",
+        "hpo_label": "",
+        "non_grounded_hpo": "toxicity",
+        "potential_hpo": [],
+        "mondo": "None",
+        "mondo_label": "",
+        "non_grounded_mondo": "excess iron deposition (eid)",
+        "potential_mondo": [],
+        "maxo_qualifier": "using deferiprone/deferoxamine combination",
+        "chebi": "deferiprone/deferoxamine combination",
+        "hpo_extension": ""
+      },
+      "count": 1,
+      "source": {
+        "38069073": {
+          "text": "Drug Selection and Posology, Optimal Therapies and Risk/Benefit Assessment in Medicine: The Paradigm of Iron-Chelating Drugs. The design of clinical protocols and the selection of drugs with appropriate posology are critical parameters for therapeutic outcomes. Optimal therapeutic protocols could ideally be designed in all diseases including for millions of patients affected by excess iron deposition (EID) toxicity based on personalised medicine parameters, as well as many variations and limitations. EID is an adverse prognostic factor for all diseases and especially for millions of chronically red-blood-cell-transfused patients. Differences in iron chelation therapy posology cause disappointing results in neurodegenerative diseases at low doses, but lifesaving outcomes in thalassemia major (TM) when using higher doses. In particular, the transformation of TM from a fatal to a chronic disease has been achieved using effective doses of oral deferiprone (L1), which improved compliance and cleared excess toxic iron from the heart associated with increased mortality in TM. Furthermore, effective L1 and L1/deferoxamine combination posology resulted in the complete elimination of EID and the maintenance of normal iron store levels in TM. The selection of effective chelation protocols has been monitored by MRI T2* diagnosis for EID levels in different organs. Millions of other iron-loaded patients with sickle cell anemia, myelodysplasia and haemopoietic stem cell transplantation, or non-iron-loaded categories with EID in different organs could also benefit from such chelation therapy advances. Drawbacks of chelation therapy include drug toxicity in some patients and also the wide use of suboptimal chelation protocols, resulting in ineffective therapies. Drug metabolic effects, and interactions with other metals, drugs and dietary molecules also affected iron chelation therapy. Drug selection and the identification of effective or optimal dose protocols are essential for positive therapeutic outcomes in the use of chelating drugs in TM and other iron-loaded and non-iron-loaded conditions, as well as general iron toxicity.",
+          "mesh_info": {
+            "D015913": "Chelation Therapy",
+            "D004359": "Drug Therapy, Combination"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,9 +1,6 @@
 package org.monarchinitiative.automaxoviewer.json;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.*;
 
 import java.util.Map;
 
@@ -32,5 +29,13 @@ public class PubMedSource {
         return mesh_info;
     }
 
+    @JsonSetter("text")
+    public void setText(String text) {
+        this.text = text;
+    }
 
+    @JsonSetter("mesh_info")
+    public void setMesh_info(Map<String, String> mesh_info) {
+        this.mesh_info = mesh_info;
+    }
 }

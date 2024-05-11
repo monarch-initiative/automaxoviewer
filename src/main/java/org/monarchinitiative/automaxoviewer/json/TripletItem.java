@@ -3,6 +3,8 @@ package org.monarchinitiative.automaxoviewer.json;
 
 import com.fasterxml.jackson.annotation.*;
 
+import java.util.Map;
+
 @JsonPropertyOrder({ "triplet", "count", "source"})
 public class TripletItem {
 
@@ -11,13 +13,12 @@ public class TripletItem {
 
     private int count;
 
-    private Source source;
-
+    private Map<String, PubMedSource> source;
 
     @JsonCreator
     public TripletItem(@JsonProperty("triplet") Triplet triplet,
                        @JsonProperty("count") int count,
-                       @JsonProperty("source") Source source){
+                       @JsonProperty("source") Map<String, PubMedSource> source){
         this.triplet = triplet;
         this.count = count;
         this.source = source;
@@ -34,7 +35,7 @@ public class TripletItem {
     }
 
     @JsonGetter("source")
-    public Source getSource() {
+    public Map<String, PubMedSource> getSource() {
         return source;
     }
 
@@ -49,7 +50,7 @@ public class TripletItem {
     }
 
     @JsonSetter("source")
-    public void setSource(Source source) {
+    public void setSource(Map<String, PubMedSource> source) {
         this.source = source;
     }
 }

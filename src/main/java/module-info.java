@@ -8,10 +8,15 @@ module org.monarchinitiative.automaxoviewer {
     requires org.slf4j;
     requires json.simple;
     requires java.net.http;
-
+    requires com.fasterxml.jackson.annotation;
+    requires com.fasterxml.jackson.core;
+    requires com.fasterxml.jackson.databind;
     opens org.monarchinitiative.automaxoviewer.view to javafx.fxml, javafx.web;
     opens org.monarchinitiative.automaxoviewer.controller to javafx.fxml, javafx.web;
     opens org.monarchinitiative.automaxoviewer.model to javafx.base;
+    opens org.monarchinitiative.automaxoviewer.json to com.fasterxml.jackson.databind;
 
     exports org.monarchinitiative.automaxoviewer;
+    exports org.monarchinitiative.automaxoviewer.json to com.fasterxml.jackson.databind;
+
 }

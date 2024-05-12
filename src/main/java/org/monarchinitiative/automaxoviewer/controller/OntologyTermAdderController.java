@@ -4,7 +4,9 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ObservableStringValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 import javafx.fxml.FXML;
@@ -45,8 +47,11 @@ public class OntologyTermAdderController implements Initializable {
 
     private final ObservableSet<String> parentTermLabels;
 
+    private final ObservableStringValue ontologyTermLabelValue;
+
     public OntologyTermAdderController() {
         parentTermLabels = FXCollections.observableSet();
+        ontologyTermLabelValue = new SimpleStringProperty();
     }
 
     @Override

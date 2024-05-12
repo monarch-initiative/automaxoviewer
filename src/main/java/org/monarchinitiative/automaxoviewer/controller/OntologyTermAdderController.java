@@ -40,7 +40,6 @@ public class OntologyTermAdderController implements Initializable {
     private final StringProperty ontologTermLabelProperty;
 
     public OntologyTermAdderController() {
-
         ontologTermLabelProperty = new SimpleStringProperty();
     }
 
@@ -59,7 +58,7 @@ public class OntologyTermAdderController implements Initializable {
         setInvalid();
     }
 
-    private void setInvalid() {
+    public void setInvalid() {
         ontologyTermErrorLabel.setTextFill(Color.RED);
         ontologyTermErrorLabel.setText("Enter at least one parent term");
         textField.setStyle("-fx-text-box-border: red; -fx-focus-color: red ;");
@@ -109,6 +108,10 @@ public class OntologyTermAdderController implements Initializable {
 
     public void setOntologyLabel(String label) {
         this.ontologyTermLabel.setText(label);
+    }
+
+    public void setOntologyLabelCandidate(String label) {
+       this.textField.setText(label);
     }
 
 

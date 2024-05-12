@@ -97,4 +97,8 @@ public class OntologyTermAdder extends HBox {
     public void setLabel(String label) {
         controller.setOntologyLabel(label);
     }
+
+    public void setOntologyLabelCandidate(String label) {
+        this.controller.setOntologyLabelCandidate(label);
+    }
 }

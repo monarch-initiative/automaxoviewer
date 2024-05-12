@@ -17,6 +17,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
 import org.monarchinitiative.automaxoviewer.json.AutomaxoJson;
@@ -24,6 +25,7 @@ import org.monarchinitiative.automaxoviewer.json.TripletItem;
 import org.monarchinitiative.automaxoviewer.model.AutoMaxoRow;
 import org.monarchinitiative.automaxoviewer.model.Model;
 import org.monarchinitiative.automaxoviewer.view.OntologyTermAdder;
+import org.monarchinitiative.automaxoviewer.view.PmidAbstractTextVisualizer;
 import org.monarchinitiative.automaxoviewer.view.ViewFactory;
 
 import org.monarchinitiative.phenol.io.OntologyLoader;
@@ -53,7 +55,11 @@ public class MainWindowController extends BaseController implements Initializabl
     @FXML
     public Menu templatesMenu;
     @FXML
-    public WebView currentRobotView;
+    public WebView currentAutoMaxoWebView;
+    @FXML
+    public ChoiceBox<String> relationCB;
+    @FXML
+    public CheckBox diseaseLevelAnnotationCheckBBox;
 
     @FXML
     private VBox statusBar;
@@ -174,8 +180,33 @@ public class MainWindowController extends BaseController implements Initializabl
         setupStatusBarOptions();
         loadOntologies();
         setUpTableView();
+        setUpChoiceBox();
         setupRobotItemHandlers();
         setUpNewTermReadiness();
+    }
+
+    /**
+     * choose one of the MAxO relations
+     * Treats	the medical action can be used to treat the phenotypic feature indicated by the HPO term in persons with the indicated disease
+     * Prevents	the medical action can be used to prevent the phenotypic feature indicated by the HPO term in persons with the indicated disease
+     * Investigates	the medical action can be used to investigate the phenotypic feature indicated by the HPO term in persons with the indicated disease
+     * Contraindicated	the medical action should not be undertaken without consideration of the particular risk of harm to persons with the indicated disease
+     * Lack of observed response
+     */
+    private void setUpChoiceBox() {
+        this.relationCB.getItems().add("treats");
+        this.relationCB.getItems().add("prevents");
+        this.relationCB.getItems().add("investigates");
+        this.relationCB.getItems().add("contraindicated");
+        this.relationCB.getItems().add("lack of observed response");
+        this.relationCB.getItems().add("unknown");
+        relationCB.setValue("unknown");
+        relationCB.setOnAction((event) -> {
+            int selectedIndex = relationCB.getSelectionModel().getSelectedIndex();
+            String selectedItem = relationCB.getSelectionModel().getSelectedItem();
+            System.out.println("Selection made: [" + selectedIndex + "] " + selectedItem);
+        });
+
     }
 
     /**
@@ -292,13 +323,25 @@ public class MainWindowController extends BaseController implements Initializabl
         mondoLabelCol.setEditable(true);
 
         automaxoTableView.setOnMouseClicked(e -> {
-            AutoMaxoRow item = automaxoTableView.getSelectionModel().getSelectedItems().get(0);
+            AutoMaxoRow item = automaxoTableView.getSelectionModel().getSelectedItems().getFirst();
             showRowInDetail(item);
+            model.setCurrentRow(item);
         });
     }
 
     private void showRowInDetail(AutoMaxoRow item) {
-
+        System.out.println("SHOW IN DETAI " + item);
+        String label = item.getHpoLabel();
+        if (label.length() < 5) {
+            label = item.getNonGroundedHpo();
+        }
+        this.hpoTermAdder.setOntologyLabelCandidate(label);
+        label = item.getMaxoLabel();
+        if (label.length() < 5) {
+            label = item.getNonGroundedMaxo();
+        }
+        this.maxoTermAdder.setOntologyLabelCandidate(label);
+        String relation = item.getRelationship();
 
     }
 
@@ -486,4 +529,21 @@ public class MainWindowController extends BaseController implements Initializabl
     }
 
 
+    public void createAnnot(ActionEvent actionEvent) {
+        System.out.println("create annotation");
+    }
+
+    public void viewNextAbstract(ActionEvent actionEvent) {
+        WebEngine engine = this.currentAutoMaxoWebView.getEngine();
+        var visualizer = new PmidAbstractTextVisualizer();
+        int n = model.getNextAbstractCount();
+        /*Optional<Term> hpoOpt = this.hpoTermAdder.getTermIfValid();
+        Optional<Term> maxoOpt = this.hpoTermAdder.getTermIfValid();
+        String hpoLabel = hpoOpt.isPresent() ? hpoOpt.get().getName() : "";
+        String maxoLabel = hpoOpt.isPresent() ? maxoOpt.get().getName() : "";
+
+         */
+        String html = visualizer.toHTML(model.getCurrentRow(), n);
+        engine.loadContent(html);
+    }
 }

@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
-    <HBox prefHeight="60.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+    <HBox prefHeight="45.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
         <Label fx:id="ontologyTermLabel" prefHeight="30.0" prefWidth="200.0" text="Parent term" />
         <TextField fx:id="textField" prefHeight="30.0" prefWidth="600.0">
             <HBox.margin>
@@ -21,10 +21,10 @@
             </HBox.margin>
         </Button>
     </HBox>
-    <HBox prefHeight="8.0" prefWidth="800.0">
+    <HBox prefHeight="8.0" prefWidth="1000.0">
         <Label fx:id="ontologyTermErrorLabel">
             <HBox.margin>
-                <Insets bottom="5.0" left="210.0" right="10.0"/>
+                <Insets bottom="5.0" left="210.0" right="10.0" />
             </HBox.margin>
         </Label>
     </HBox>

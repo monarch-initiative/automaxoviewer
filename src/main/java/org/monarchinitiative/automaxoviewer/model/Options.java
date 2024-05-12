@@ -66,6 +66,9 @@ public class Options implements Serializable {
         this.hpJsonFile.set(new File(hpJsonFile));
         this.maxoJsonFile.set(new File(maxoJsonFile));
         this.orcid.set(orcid);
+        LOGGER.info("hp.json: {}", hpJsonFile);
+        LOGGER.info("maxo.json: {}", maxoJsonFile);
+        LOGGER.info("ORCID: {}", orcid);
     }
 
     public Options(){
@@ -179,7 +182,7 @@ public class Options implements Serializable {
     public final static String ORCID_KEY = "orcid";
 
     public void writeOptions() {
-        File file = Platform.getHpo2RobotOptionsFile();
+        File file = Platform.getAutoMaxoViewerOptionsFile();
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))){
             bw.write(OPTIONS_HEADER_LINE + "\n");
             if (hpJsonFileValid(hpJsonFile.get())) {
@@ -197,9 +200,9 @@ public class Options implements Serializable {
     }
 
     public static Map<String, String> readOptions() {
-        File hpo2robotOptionsFile = Platform.getHpo2RobotOptionsFile();
+        File autoMaxoViewerOptionsFile = Platform.getAutoMaxoViewerOptionsFile();
         Map<String,String> optionsMap = new HashMap<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(hpo2robotOptionsFile))){
+        try (BufferedReader br = new BufferedReader(new FileReader(autoMaxoViewerOptionsFile))){
             String line;
             while ((line=br.readLine()) != null) {
                 if (line.startsWith("!")) continue;

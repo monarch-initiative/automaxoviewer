@@ -16,10 +16,7 @@ import org.monarchinitiative.phenol.ontology.data.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**]
  * Widget for adding parent terms to the current ROBOT entry
@@ -59,23 +56,33 @@ public class OntologyTermAdder extends HBox {
             LOGGER.error("Attempt to set Ontology with null pointer.");
             return;
         }
-        LOGGER.info("Adding ontology to parent-term-adder {}", ontology.version().orElse("n/a"));
+        Map<String,String> metaInfo = ontology.getMetaInfo();
+        String dataVersion = "n/a";
+        if (metaInfo.containsKey("data-version")) {
+            dataVersion = metaInfo.get("data-version");
+            int last = dataVersion.lastIndexOf("/");
+            if (last > 0) {
+                dataVersion = dataVersion.substring(last+1);
+            }
+            LOGGER.info("Adding {} to OntologyTermAdder, version {}", dataVersion, ontology.version().orElse("n/a"));
+        } else {
+            LOGGER.info("Adding ontology to OntologyTermAdder {}", ontology.version().orElse("n/a"));
+        }
         rosettaStone = new OntologyRosettaStone(ontology);
         TextFields.bindAutoCompletion(controller.getTextField(), rosettaStone.allLabels());
     }
 
 
-    public List<Term> getParentTermList() {
-        Set<String> parentTermLabelSet = controller.getParentSet();
-        List<Term> parentList = new ArrayList<>();
-        for (String parentLabel : parentTermLabelSet) {
-            Optional<Term> opt = rosettaStone.termFromPrimaryLabel(parentLabel);
-            opt.ifPresent(parentList::add);
-        }
-        return parentList;
+    public Optional<Term> getTermIfValid() {
+        String label = controller.getOntologyTerm();
+        Optional<Term> opt = rosettaStone.termFromPrimaryLabel(label);
+        return opt;
     }
 
-    public void setParentTerm(String label) {
+
+
+
+    public void setOntologyTerm(String label) {
         this.controller.getTextField().setText(label);
     }
 
@@ -85,5 +92,9 @@ public class OntologyTermAdder extends HBox {
 
     public BooleanProperty parentTermsReady() {
         return parentTermReadyProperty;
+    }
+
+    public void setLabel(String label) {
+        controller.setOntologyLabel(label);
     }
 }

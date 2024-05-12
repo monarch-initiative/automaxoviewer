@@ -2,7 +2,6 @@ package org.monarchinitiative.automaxoviewer.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.HostServices;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -127,10 +126,11 @@ public class MainWindowController extends BaseController implements Initializabl
             Task<MinimalOntology> maxoLoadTask = new Task<>() {
                 @Override
                 protected MinimalOntology call() {
-                    MinimalOntology maxoOntology = OntologyLoader.loadOntology(maxoJsonFile);
-                    LOGGER.info("Loaded HPO, version {}", maxoOntology.version().orElse("n/a"));
-                    maxoTermAdder.setOntology(hpOntology.get());
-                    return maxoOntology;
+                    MinimalOntology minOntology = OntologyLoader.loadOntology(maxoJsonFile);
+                    LOGGER.info("Loaded MAxO, version {}", minOntology.version().orElse("n/a"));
+                    maxoOntology.set(minOntology);
+                    maxoTermAdder.setOntology(maxoOntology.get());
+                    return minOntology;
                 }
             };
             maxoLoadTask.setOnSucceeded(e -> {
@@ -201,10 +201,12 @@ public class MainWindowController extends BaseController implements Initializabl
         // Setup event handlers to update HPO in case the user changes path to another one
         viewFactory.getOptions().hpJsonFileProperty().addListener((obs, old, hpJsonFilePath) -> loadHpo(hpJsonFilePath));
         viewFactory.getOptions().maxoJsonFileProperty().addListener((obs, old, maxoJsonFilePath) -> loadMaxo(maxoJsonFilePath));
-        // Do the actual loading..
         loadHpo(viewFactory.getOptions().getHpJsonFile());
         loadMaxo(viewFactory.getOptions().getMaxoJsonFile());
         this.model.setOptions(viewFactory.getOptions());
+        // set the labels
+        hpoTermAdder.setLabel("HPO");
+        maxoTermAdder.setLabel("MAxO");
     }
 
     /**
@@ -445,8 +447,10 @@ public class MainWindowController extends BaseController implements Initializabl
     }
 
 
-
-
+    /**
+     * Open a window and show the versions of HPO and MAxO
+     */
+    @FXML
     public void showVersionsAction(ActionEvent e) {
         e.consume();
         String hpo_json_version = "n/a";
@@ -454,7 +458,13 @@ public class MainWindowController extends BaseController implements Initializabl
             Optional<String> opt = hpOntology.get().version();
             hpo_json_version = opt.orElse("could not retrieve version");
         }
-        PopUps.alertDialog("hp.json version", String.format("hp.json: %s", hpo_json_version));
+        String maxo_json_version = "n/a";
+        if (maxoOntology != null) {
+            Optional<String> opt = maxoOntology.get().version();
+            maxo_json_version = opt.orElse("could not retrieve version");
+        }
+        String msg = String.format("hp.json: %s, maxo.json: %s", hpo_json_version,maxo_json_version);
+        PopUps.alertDialog("Ontology versions", msg);
     }
 
     public void openAutoMAxO(ActionEvent e) {

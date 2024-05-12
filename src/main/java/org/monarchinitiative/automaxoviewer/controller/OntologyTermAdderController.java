@@ -1,14 +1,9 @@
 package org.monarchinitiative.automaxoviewer.controller;
 
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.IntegerBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableStringValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableSet;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -20,10 +15,7 @@ import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 /**
  * Controller for a widget that allows the user to select parent terms by autocomplete or
@@ -45,20 +37,17 @@ public class OntologyTermAdderController implements Initializable {
 
     private final BooleanProperty ontologyTermReadyProperty = new SimpleBooleanProperty(false);
 
-    private final ObservableSet<String> parentTermLabels;
-
-    private final ObservableStringValue ontologyTermLabelValue;
+    private final StringProperty ontologTermLabelProperty;
 
     public OntologyTermAdderController() {
-        parentTermLabels = FXCollections.observableSet();
-        ontologyTermLabelValue = new SimpleStringProperty();
+
+        ontologTermLabelProperty = new SimpleStringProperty();
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         addButton.setOnAction(e ->{
-            String parentTermText = textField.getText();
-            parentTermLabels.add(parentTermText);
+            ontologTermLabelProperty.set(textField.getText());
             textField.clear();
             setValid(getErrorLabel());
             ontologyTermErrorLabel.setText(getErrorLabel());
@@ -66,8 +55,7 @@ public class OntologyTermAdderController implements Initializable {
         addButton.setStyle("-fx-spacing: 10;");
         Font largeFont = Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18);
         ontologyTermLabel.setFont(largeFont);
-        IntegerBinding parentTermLabelSetSize = Bindings.size(parentTermLabels);
-        ontologyTermReadyProperty.bind(parentTermLabelSetSize.greaterThan(0));
+        ontologyTermReadyProperty.bind(ontologTermLabelProperty.length().greaterThan(0));
         setInvalid();
     }
 
@@ -86,14 +74,10 @@ public class OntologyTermAdderController implements Initializable {
 
 
     private String getErrorLabel() {
-        if (parentTermLabels.isEmpty()) {
+        if (ontologTermLabelProperty.get().isEmpty()) {
             return "";
         } else {
-            List<String> shortLabels = new ArrayList<>();
-            for (String ptl : parentTermLabels) {
-                shortLabels.add(ptl.length() < 30 ? ptl : String.format("%s...", ptl.substring(0,27)));
-            }
-            return String.join("; ", shortLabels);
+            return ontologTermLabelProperty.get();
         }
     }
 
@@ -101,12 +85,10 @@ public class OntologyTermAdderController implements Initializable {
         return textField.textProperty();
     }
 
-    /**
-     *
-     * @return a set of Labels representing the parent or parents of the current term.
-     */
-    public Set<String> getParentSet() {
-        return parentTermLabels;
+
+
+    public String getOntologyTerm() {
+        return ontologTermLabelProperty.get();
     }
 
     public TextField getTextField() {
@@ -115,7 +97,7 @@ public class OntologyTermAdderController implements Initializable {
 
 
     public void clearFields() {
-        this.parentTermLabels.clear();
+        this.ontologTermLabelProperty.set("");
         this.ontologyTermErrorLabel.setText("");
         setInvalid();
     }
@@ -124,6 +106,10 @@ public class OntologyTermAdderController implements Initializable {
         return ontologyTermReadyProperty;
     }
 
+
+    public void setOntologyLabel(String label) {
+        this.ontologyTermLabel.setText(label);
+    }
 
 
 }

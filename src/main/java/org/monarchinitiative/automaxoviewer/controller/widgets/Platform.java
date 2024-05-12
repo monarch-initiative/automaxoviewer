@@ -56,31 +56,20 @@ public class Platform {
     }
 
 
-    public static File getHpo2RobotOptionsFile() {
+    public static File getAutoMaxoViewerOptionsFile() {
         File dir = getAutomaxoDir();
-        File file = new File(dir + File.separator + "hpo2robot.txt");
+        File file = new File(dir + File.separator + "automaxoviewer.txt");
         if (! file.isFile()) {
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
-                bw.write("! hpo2robot.txt options file\n");
+                bw.write("! automaxoviewer.txt options file\n");
             } catch (IOException e) {
-                PopUps.showErrorMessage("Could not initialized hpo2robot.txt file");
+                PopUps.showErrorMessage("Could not initialize automaxoviewer.txt file");
             }
         }
         return file;
     }
 
-    public static File getSkippedIssueFile() {
-        File dir = getAutomaxoDir();
-        File file = new File(dir + File.separator + "hpo2robot-skipped-issues.txt");
-        if (! file.isFile()) {
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
-                bw.write("! hpo2robot.txt skipped issue file\n");
-            } catch (IOException e) {
-                PopUps.showErrorMessage("Could not initialized skipped issues file");
-            }
-        }
-        return file;
-    }
+
 
     private static void createDirIfNotExists(File dirPath) {
 
@@ -90,7 +79,7 @@ public class Platform {
             }
         } catch (IOException e) {
             Alert a = new Alert(AlertType.ERROR);
-            a.setTitle("Error creating hpo2robot directory");
+            a.setTitle("Error creating automaxoviewer directory");
             a.setHeaderText(null);
             a.setContentText(String.format("Could not create directory: \"%s\"", e.getMessage()));
             a.showAndWait();
@@ -99,11 +88,11 @@ public class Platform {
 
     /**
      * Get the absolute path to the log file.
-     * @return the absolute path,e.g., /home/user/.hpo2robot/hpo2robot.log
+     * @return the absolute path,e.g., /home/user/.automaxoviewer/automaxoviewer.log
      */
     public static String getAbsoluteLogPath() {
         File dir = getAutomaxoDir();
-        return dir + File.separator +  "hpo2robot.log";
+        return dir + File.separator +  "automaxoviewer.log";
     }
 
 

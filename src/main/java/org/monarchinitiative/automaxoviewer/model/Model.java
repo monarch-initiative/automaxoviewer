@@ -3,7 +3,6 @@ package org.monarchinitiative.automaxoviewer.model;
 import org.monarchinitiative.automaxoviewer.json.AutomaxoJson;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 

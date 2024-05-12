@@ -188,14 +188,15 @@ public class OptionsWindowController extends BaseController implements Initializ
      * Download the hp.json file to $HOME/.automaxoviewer/hp.json
      */
 
-    public void downloadMaxo(ActionEvent e) {
+    public void downloadMaxoJson(ActionEvent e) {
         e.consume();
         File automaxoDir = Platform.getAutomaxoDir();
         Path maxoJsonPath = Paths.get(String.valueOf(automaxoDir), "maxo.json");
+        LOGGER.info("Downloading maxo to {}", maxoJsonPath.toFile().getAbsolutePath());
         try {
-            URL hpoJson = new URL("http://purl.obolibrary.org/obo/maxo.json");
+            URL maxoJson = new URL("http://purl.obolibrary.org/obo/maxo.json");
             FileDownloader downloader = new FileDownloader();
-            downloader.copyURLToFile(hpoJson, maxoJsonPath.toFile());
+            downloader.copyURLToFile(maxoJson, maxoJsonPath.toFile());
         } catch (MalformedURLException ex) {
             LOGGER.error("Could not download maxo.json: {}", ex.getMessage());
             throw new RuntimeException(ex);

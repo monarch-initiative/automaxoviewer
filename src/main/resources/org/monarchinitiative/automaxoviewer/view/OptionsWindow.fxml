@@ -28,7 +28,7 @@
         <Label text="maxo.json" GridPane.rowIndex="1" />
       <Label text="ORCID ID" GridPane.rowIndex="2" />
 
-      <Button fx:id="maxoJsonButton" mnemonicParsing="false" onAction="#downloadMaxo" text="Download" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      <Button fx:id="maxoJsonButton" mnemonicParsing="false" onAction="#downloadMaxoJson" text="Download" GridPane.columnIndex="1" GridPane.rowIndex="1" />
       <Label fx:id="maxoJsonLabel" text="not initialized" GridPane.columnIndex="2" GridPane.rowIndex="1" />
     </GridPane>
     <VBox fx:id="buttonBox" layoutX="325.0" layoutY="339.0" AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="20.0">

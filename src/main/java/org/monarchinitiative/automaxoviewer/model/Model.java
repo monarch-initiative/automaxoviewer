@@ -13,7 +13,11 @@ public class Model {
 
     private Options options = null;
 
-    public Model(AutomaxoJson automaxoJson) {
+
+    public Model() {
+    }
+
+    public void setTripletItemList(AutomaxoJson automaxoJson) {
         this.tripletItemList = Arrays.stream(automaxoJson.getTriplets()).toList();
     }
 

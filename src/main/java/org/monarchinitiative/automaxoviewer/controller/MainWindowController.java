@@ -93,7 +93,7 @@ public class MainWindowController extends BaseController implements Initializabl
 
     public MainWindowController(ViewFactory viewFactory, String fxmlName) {
         super(viewFactory, fxmlName);
-       // model = new Model();
+       model = new Model();
     }
 
     @FXML
@@ -138,7 +138,7 @@ public class MainWindowController extends BaseController implements Initializabl
                 maxoTermAdder.setOntology(this.maxoOntology.get());
             });
             maxoLoadTask.setOnFailed(e -> {
-                LOGGER.warn("Could not load HPO from {}", maxoJsonFile.getAbsolutePath());
+                LOGGER.warn("Could not load MAxO from {}", maxoJsonFile.getAbsolutePath());
                 maxoOntology.set(null);
             });
             Thread thread = new Thread(maxoLoadTask);
@@ -464,7 +464,7 @@ public class MainWindowController extends BaseController implements Initializabl
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
                 AutomaxoJson automaxo = objectMapper.readValue(automaxoFile, AutomaxoJson.class);
-                this.model = new Model(automaxo);
+                this.model.setTripletItemList(automaxo);
                 populateTable();
             } catch (Exception exc) {
                 PopUps.showException("Error", exc.getMessage(), "Could not read JSON", exc);

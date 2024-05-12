@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.monarchinitiative.automaxoviewer.controller.widgets.Platform;
+import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +23,7 @@ import java.util.regex.Pattern;
 public class Options implements Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Options.class);
 
-    public final static String OPTIONS_HEADER_LINE = "! hpo2robot options file";
+    public final static String OPTIONS_HEADER_LINE = "! automaxoviewer options file";
 
     public final static String N_A = "n/a";
 
@@ -37,7 +38,7 @@ public class Options implements Serializable {
 
     private final ObjectProperty<File> hpJsonFile = new SimpleObjectProperty<>();
 
-    private final ObjectProperty<File> hpSrcOntologyDirectory = new SimpleObjectProperty<>();
+    private final ObjectProperty<File> maxoJsonFile = new SimpleObjectProperty<>();
 
     private final StringProperty orcid = new SimpleStringProperty();
 
@@ -45,15 +46,30 @@ public class Options implements Serializable {
 
 
 
-    public Options(String hpJsonFile, String orcid, String hpSrcOntologyFolder) {
+
+    private boolean isUninitialzedOrValid(String jsonPath) {
+        if (jsonPath == null) return false;
+        if (jsonPath == "not initialized") return true;
+        File jsonFile = new File(jsonPath);
+        if (jsonFile.getAbsolutePath().isEmpty()) return true; // uninitialized, OK
+        return  (! jsonFile.getName().contains(".json"));
+    }
+
+    public Options(String hpJsonFile, String maxoJsonFile, String orcid) {
         this();
+        if (! isUninitialzedOrValid(hpJsonFile)) {
+            throw new PhenolRuntimeException("Malformed hp.json file: " + hpJsonFile);
+        }
+        if (! isUninitialzedOrValid(maxoJsonFile)) {
+            throw new PhenolRuntimeException("Malformed maxo.json file: " + maxoJsonFile);
+        }
         this.hpJsonFile.set(new File(hpJsonFile));
-        this.hpSrcOntologyDirectory.set(new File(hpSrcOntologyFolder));
+        this.maxoJsonFile.set(new File(maxoJsonFile));
         this.orcid.set(orcid);
     }
 
     public Options(){
-        isReady = hpJsonFile.isNotNull().and(hpSrcOntologyDirectory.isNotNull()).and(orcid.isNotEmpty());
+        isReady = hpJsonFile.isNotNull().and(maxoJsonFile.isNotNull()).and(orcid.isNotEmpty());
     }
 
 
@@ -70,13 +86,17 @@ public class Options implements Serializable {
         return hpJsonFile;
     }
 
-    public File getHpSrcOntologyDir() {
-        return hpSrcOntologyDirectory.get();
+    public File getMaxoJsonFile() {
+        return maxoJsonFile.get();
     }
 
-    public void setHpSrcOntologyDir(File hpEditOwlFile) {
-        this.hpSrcOntologyDirectory.set(hpEditOwlFile);
+    public void setMaxoJsonFile(File maxoJsonFile) {
+        this.maxoJsonFile.set(maxoJsonFile);
     }
+    public ObjectProperty<File> maxoJsonFileProperty() {
+        return maxoJsonFile;
+    }
+
 
     public String getOrcid() {
         return orcid.get();
@@ -94,7 +114,7 @@ public class Options implements Serializable {
         if (hpJsonFile.get() == null || ! hpJsonFile.get().isFile()) {
             return false;
         }
-        if (hpSrcOntologyDirectory.get() == null || ! hpSrcOntologyDirectory.get().isDirectory()) {
+        if (maxoJsonFile.get() == null || ! maxoJsonFile.get().isFile()) {
             return false;
         }
         // the last thing to check is if the ORCID matches
@@ -109,10 +129,10 @@ public class Options implements Serializable {
     public String toString() {
         return String.format("""
                                 HPO: %s
-                                hpo/src/ontology: %s
+                                MAXO: %s
                                 biocurator: %s
                                 valid: %s""",
-                hpJsonFile.get(), hpSrcOntologyDirectory.get(), orcid, isValid());
+                hpJsonFile.get(), maxoJsonFile.get(), orcid, isValid());
     }
 
     public String getErrorMessage() {
@@ -120,13 +140,13 @@ public class Options implements Serializable {
         if (hp == null) {
             return "hp.json not initialized.";
         } else if (!hp.isFile()) {
-            return String.format("could not find hp.json at %s", hp);
+            return String.format("could not find hp.json at %s", hp.getAbsolutePath());
         }
-        File hpSrcOnto = hpSrcOntologyDirectory.get();
-        if (hpSrcOnto == null) {
-            return "hp/src/ontology not set.";
-        } else if (! hpSrcOnto.isDirectory()) {
-            return String.format("%s is not a valid directory.", hpSrcOnto);
+        File maxoJson = maxoJsonFile.get();
+        if (maxoJson == null) {
+            return "maxo.json not initialized.";
+        } else if (! maxoJson.isFile()) {
+            return String.format("could not find maxo.json at %s.", maxoJson.getAbsolutePath());
         }
         final Matcher matcher = ORCID_PATTERN.matcher(orcid.get());
         boolean ORCID_OK = matcher.matches();
@@ -142,23 +162,20 @@ public class Options implements Serializable {
         return matcher.matches();
     }
 
-    private boolean hpSrcOntologyDirValid(File hpoDir) {
-        if (hpoDir == null) return false;
-        if (! hpoDir.isDirectory()) return false;
-        // the directory path should be hpo/src/ontology
-        String dir = hpoDir.getAbsolutePath();
-        return dir.contains("ontology") && dir.contains("hpo") && dir.contains("src");
-    }
-
     private boolean hpJsonFileValid(File hpJsonFile) {
         if (hpJsonFile == null) return false;
         if (! hpJsonFile.isFile()) return false;
         return hpJsonFile.getName().equals("hp.json");
     }
 
-    public final static String HP_JSON_KEY = "hp.json.file";
+    private boolean maxoJsonFileValid(File hpJsonFile) {
+        if (hpJsonFile == null) return false;
+        if (! hpJsonFile.isFile()) return false;
+        return hpJsonFile.getName().equals("maxo.json");
+    }
 
-    public final static String HP_SRC_DIRECTORY = "hp.src.dir";
+    public final static String HP_JSON_KEY = "hp.json.file";
+    public final static String MAXO_JSON_KEY = "maxo.json.file";
     public final static String ORCID_KEY = "orcid";
 
     public void writeOptions() {
@@ -168,11 +185,11 @@ public class Options implements Serializable {
             if (hpJsonFileValid(hpJsonFile.get())) {
                 bw.write(HP_JSON_KEY + ":" + hpJsonFile.get());
             }
+            if (maxoJsonFileValid(maxoJsonFile.get())) {
+                bw.write(MAXO_JSON_KEY + ":" + maxoJsonFile.get());
+            }
             if (validOrcid(orcid.get())) {
                 bw.write(ORCID_KEY + ":" + orcid.get());
-            }
-            if (hpSrcOntologyDirValid(hpSrcOntologyDirectory.get()) ) {
-                bw.write(HP_SRC_DIRECTORY + ":" + hpSrcOntologyDirectory.get());
             }
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
@@ -196,7 +213,8 @@ public class Options implements Serializable {
                 switch (item) {
                     case HP_JSON_KEY -> optionsMap.put(HP_JSON_KEY, value);
                     case ORCID_KEY -> optionsMap.put(ORCID_KEY, value);
-                    case HP_SRC_DIRECTORY -> optionsMap.put(HP_SRC_DIRECTORY, value);
+                    case MAXO_JSON_KEY -> optionsMap.put(MAXO_JSON_KEY, value);
+                    default -> {LOGGER.error("Did not recognize option {}:{}", item, value);}
                 }
             }
         } catch (IOException e) {

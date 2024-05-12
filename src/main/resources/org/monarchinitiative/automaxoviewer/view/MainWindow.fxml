@@ -31,18 +31,18 @@
             </Menu>
         </MenuBar>
     </top>
-    <left>
+    <!--<left>
         <Label>Label</Label>
-    </left>
+    </left> -->
     <center>
         <VBox prefHeight="977.0" prefWidth="300" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="27.0">
-            <TableView fx:id="robotTableView" layoutX="197.0" layoutY="28.0" minHeight="250" prefHeight="300.0" prefWidth="1004.0" AnchorPane.leftAnchor="196.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="207.0">
+            <TableView fx:id="automaxoTableView" layoutX="197.0" layoutY="28.0" minHeight="250" prefHeight="300.0" prefWidth="1004.0" AnchorPane.leftAnchor="196.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="207.0">
                 <columns>
-                    <TableColumn fx:id="newTermLabelCol" prefWidth="75.0" text="New Term" />
-                    <TableColumn fx:id="definitionCol" prefWidth="75.0" text="Definition" />
-                    <TableColumn fx:id="parentTermCol" prefWidth="75.0" text="Parent Term (s)" />
-                    <TableColumn fx:id="pmidsCol" prefWidth="75.0" text="PMID(s)" />
-                    <TableColumn fx:id="issueCol" prefWidth="75.0" text="Issue" />
+                    <TableColumn fx:id="maxoLabelCol" prefWidth="400.0" text="MAxO Term" />
+                    <TableColumn fx:id="relationCol" prefWidth="80.0" text="Relation" />
+                    <TableColumn fx:id="hpoLabelCol" prefWidth="400.0" text="HPO Term" />
+                    <TableColumn fx:id="pmidCountCol" prefWidth="50.0" text="PMID(s)" />
+                    <TableColumn fx:id="mondoLabelCol" prefWidth="400.0" text="Mondo" />
                 </columns>
 
             </TableView>

@@ -1,5 +1,6 @@
 package org.monarchinitiative.automaxoviewer.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.HostServices;
 import javafx.beans.property.*;
 import javafx.event.ActionEvent;
@@ -8,14 +9,21 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
-import org.monarchinitiative.automaxoviewer.model.AutoMaxoItem;
+import org.monarchinitiative.automaxoviewer.json.AutomaxoJson;
+import org.monarchinitiative.automaxoviewer.json.TripletItem;
+import org.monarchinitiative.automaxoviewer.model.AutoMaxoRow;
+import org.monarchinitiative.automaxoviewer.model.Model;
 import org.monarchinitiative.automaxoviewer.view.ViewFactory;
 
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
@@ -51,7 +59,20 @@ public class MainWindowController extends BaseController implements Initializabl
     private StringProperty statusBarTextProperty;
     private Optional<HostServices> hostServicesOpt;
 
-   // private final Model model;
+    @FXML
+    private TableView<AutoMaxoRow> automaxoTableView;
+    @FXML
+    private TableColumn<AutoMaxoRow, String> hpoLabelCol;
+    @FXML
+    private TableColumn<AutoMaxoRow, String> maxoLabelCol;
+    @FXML
+    private TableColumn<AutoMaxoRow, String> relationCol;
+    @FXML
+    private TableColumn<AutoMaxoRow, String> pmidCountCol;
+    @FXML
+    private TableColumn<AutoMaxoRow, String> mondoLabelCol;
+
+   private Model model;
 
     /** This gets set to true once the Ontology tree has finished initiatializing. Before that
      * we can check to make sure the user does not try to open a disease before the Ontology is
@@ -214,6 +235,28 @@ public class MainWindowController extends BaseController implements Initializabl
 
 
     private void setUpTableView() {
+        automaxoTableView.setPlaceholder(new Text("Open automaxo file to see items"));
+        // automaxoTableView.setEditable(false); ??
+
+        maxoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().maxoDisplay()));
+        maxoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        maxoLabelCol.setEditable(true);
+        relationCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getRelationship()));
+        relationCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        relationCol.setEditable(true);
+
+        hpoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().hpoDisplay()));
+        hpoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        hpoLabelCol.setEditable(true);
+
+        pmidCountCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(String.valueOf(cdf.getValue().getCount())));
+        pmidCountCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        pmidCountCol.setEditable(false);
+
+
+        mondoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().mondoDisplay()));
+        mondoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        mondoLabelCol.setEditable(true);
         /*
         robotTableView.setPlaceholder(new Text("No ROBOT items in table"));
         robotTableView.setEditable(false);
@@ -463,14 +506,36 @@ public class MainWindowController extends BaseController implements Initializabl
     public void openAutoMAxO(ActionEvent actionEvent) {
         File automaxoFile = PopUps.selectFileToOpen(null, new File("."), "AutoMAxO file" );
         if (automaxoFile != null && automaxoFile.isFile()) {
-            List<AutoMaxoItem> items = AutoMaxoItem.parseAutoMaxoItems(automaxoFile);
-            for (var i:items) {
-                System.out.println(i);
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                AutomaxoJson automaxo = objectMapper.readValue(automaxoFile, AutomaxoJson.class);
+                this.model = new Model(automaxo);
+                populateTable();
+            } catch (Exception e) {
+                PopUps.showException("Error", e.getMessage(), "Could not read JSON", e);
             }
-            System.out.printf("Got %d automaxo items", items.size());
+            String msg = String.format("Got %d automaxo items", model.getTripletItemList().size());
+            PopUps.alertDialog("Success", msg);
+            LOGGER.info(msg);
         } else {
-            System.out.println("Could not get itmes");
+            PopUps.alertDialog("Warning", "Could not get automaxo file");
         }
-
     }
+
+    private void populateTable() {
+        List<TripletItem> tilist = model.getTripletItemList();
+        List<AutoMaxoRow> rowList = tilist.stream().map(AutoMaxoRow::new).toList();
+        javafx.application.Platform.runLater(() -> {
+            LOGGER.trace("populateTable: got a total of " + rowList.size() + " Automaxo items");
+            automaxoTableView.getItems().clear(); /* clear previous rows, if any */
+            automaxoTableView.getItems().addAll(rowList);
+            automaxoTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            //AnchorPane.setTopAnchor(hbaGeneResultTableView, listviewHbox.getLayoutY() + listviewHbox.getHeight());
+            //automaxoTableView.sort();
+            // set up the search bar
+
+        });
+    }
+
+
 }

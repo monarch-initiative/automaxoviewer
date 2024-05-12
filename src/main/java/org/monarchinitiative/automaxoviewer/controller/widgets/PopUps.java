@@ -223,7 +223,7 @@ public class PopUps {
     private static Stage adjustStagePosition(Stage childStage, Stage parentStage) {
         ObservableList<Screen> screensForParentWindow = Screen.getScreensForRectangle(parentStage.getX(), parentStage.getY(),
                 parentStage.getWidth(), parentStage.getHeight());
-        Screen actual = screensForParentWindow.get(0);
+        Screen actual = screensForParentWindow.getFirst();
         Rectangle2D bounds = actual.getVisualBounds();
 
         // set top left position to 35%/25% of screen/monitor width & height

@@ -36,13 +36,13 @@ public class OptionsWindowController extends BaseController implements Initializ
 
     private static final String N_A = "na";
     @FXML
-    public Label hpSrcOntologyLabel;
+    public Label maxoJsonLabel;
     @FXML
     public Button hpJsonButton;
     @FXML
-    public Button orcidButton;
+    public Button maxoJsonButton;
     @FXML
-    public Button hpSrcOntoButton;
+    public Button orcidButton;
     @FXML
     public Button okButton;
     @FXML
@@ -55,7 +55,7 @@ public class OptionsWindowController extends BaseController implements Initializ
 
     private final StringProperty hpJsonProperty;
 
-    private final StringProperty hpSrcOntologyProperty;
+    private final StringProperty maxoJsonProperty;
 
     private final StringProperty orcidProperty;
 
@@ -77,7 +77,7 @@ public class OptionsWindowController extends BaseController implements Initializ
     public OptionsWindowController(ViewFactory viewFactory, String fxmlName) {
         super(viewFactory, fxmlName);
         hpJsonProperty = new SimpleStringProperty(NOT_INITIALIZED);
-        hpSrcOntologyProperty = new SimpleStringProperty(NOT_INITIALIZED);
+        maxoJsonProperty = new SimpleStringProperty(NOT_INITIALIZED);
         orcidProperty = new SimpleStringProperty(NOT_INITIALIZED);
         // initialize options that were saved in the $HOME/.hpo2robot.txt file
         Map<String, String> opts = Options.readOptions();
@@ -85,7 +85,7 @@ public class OptionsWindowController extends BaseController implements Initializ
             switch (e.getKey()) {
                 case Options.HP_JSON_KEY -> hpJsonProperty.set(e.getValue());
                 case Options.ORCID_KEY -> orcidProperty.set(e.getValue());
-                case Options.HP_SRC_DIRECTORY -> hpSrcOntologyProperty.set(e.getValue());
+                case Options.MAXO_JSON_KEY -> maxoJsonProperty.set(e.getValue());
             }
         }
     }
@@ -93,7 +93,7 @@ public class OptionsWindowController extends BaseController implements Initializ
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         hpJsonLabel.textProperty().bind(hpJsonProperty);
-        hpSrcOntologyLabel.textProperty().bind(hpSrcOntologyProperty);
+        maxoJsonLabel.textProperty().bind(maxoJsonProperty);
         orcidLabel.textProperty().bind(orcidProperty);
         buttonBox.setSpacing(10);
         setupCss();
@@ -115,18 +115,18 @@ public class OptionsWindowController extends BaseController implements Initializ
 
     private void setupCss() {
         hpJsonButton.setStyle(BUTTON_CSS);
-        hpSrcOntoButton.setStyle(BUTTON_CSS);
+        maxoJsonButton.setStyle(BUTTON_CSS);
         orcidButton.setStyle(BUTTON_CSS);
         okButton.setStyle(BUTTON_CSS);
         cancelButton.setStyle(BUTTON_CSS);
     }
 
     /**
-     * Download the hp.json file to $HOME/.hpo2robot/hp.json
+     * Download the hp.json file to $HOME/.automaxoviewer/hp.json
      */
-    public void downloadJson(ActionEvent e) {
+    public void downloadHpoJson(ActionEvent e) {
         e.consume();
-        File hpo2robotDir = Platform.getHpo2RobotDir();
+        File hpo2robotDir = Platform.getAutomaxoDir();
         Path hpJsonPath = Paths.get(String.valueOf(hpo2robotDir), "hp.json");
 
         try {
@@ -148,35 +148,15 @@ public class OptionsWindowController extends BaseController implements Initializ
         Optional<String> opt = UserStringFetcher.fetchORCID();
         if (opt.isPresent()) {
             String orcid = opt.get();
-            //this.options.setOrcid(orcid);
             this.orcidProperty.set(orcid);
         } else {
             LOGGER.warn("Could not retrieve ORCID from user");
         }
     }
 
-    public Optional<Options> getOptions() {
-        Options options =  new Options(hpJsonProperty.get(), orcidProperty.get(),
-                hpSrcOntologyProperty.get());
-        if (options.isValid()) {
-            return Optional.of(options);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Set the path to the cloned GitHub repository human-phenotype-ontology/src/ontology
-     * Note that the repository must be up-to-date (pull) to avoid BAD THINGS.
-     */
-    public void setHpSrcOntology(ActionEvent e) {
-        e.consume();
-        Optional<File> opt = setDirectory("Set hpo/src/ontology folder");
-        if (opt.isPresent()) {
-            File f = opt.get();
-           // this.options.setHpSrcOntologyDir(f);
-            this.hpSrcOntologyProperty.set(f.getAbsolutePath());
-        }
+    public Options getOptions() {
+        Options options =  new Options(hpJsonProperty.get(), maxoJsonProperty.get(), orcidProperty.get());
+        return options;
     }
 
 
@@ -199,12 +179,30 @@ public class OptionsWindowController extends BaseController implements Initializ
 
 
     public void setCurrentOptions(Options options) {
-        //this.options = options;
         this.hpJsonProperty.set(options.getHpJsonFile().getAbsolutePath());
-        this.hpSrcOntologyProperty.set(options.getHpSrcOntologyDir().getAbsolutePath());
+        this.maxoJsonProperty.set(options.getMaxoJsonFile().getAbsolutePath());
         this.orcidProperty.set(options.getOrcid());
     }
 
+    /**
+     * Download the hp.json file to $HOME/.automaxoviewer/hp.json
+     */
 
+    public void downloadMaxoJson(ActionEvent e) {
+        e.consume();
+        File automaxoDir = Platform.getAutomaxoDir();
+        Path maxoJsonPath = Paths.get(String.valueOf(automaxoDir), "maxo.json");
+        LOGGER.info("Downloading maxo to {}", maxoJsonPath.toFile().getAbsolutePath());
+        try {
+            URL maxoJson = new URL("http://purl.obolibrary.org/obo/maxo.json");
+            FileDownloader downloader = new FileDownloader();
+            downloader.copyURLToFile(maxoJson, maxoJsonPath.toFile());
+        } catch (MalformedURLException ex) {
+            LOGGER.error("Could not download maxo.json: {}", ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+        // if we get here, download was successful
+        maxoJsonProperty.set(maxoJsonPath.toFile().getAbsolutePath());
 
+    }
 }

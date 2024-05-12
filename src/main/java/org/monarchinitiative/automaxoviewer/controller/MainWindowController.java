@@ -1,23 +1,32 @@
 package org.monarchinitiative.automaxoviewer.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.HostServices;
 import javafx.beans.property.*;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
-import org.monarchinitiative.automaxoviewer.model.AutoMaxoItem;
+import org.monarchinitiative.automaxoviewer.json.AutomaxoJson;
+import org.monarchinitiative.automaxoviewer.json.TripletItem;
+import org.monarchinitiative.automaxoviewer.model.AutoMaxoRow;
+import org.monarchinitiative.automaxoviewer.model.Model;
+import org.monarchinitiative.automaxoviewer.view.OntologyTermAdder;
 import org.monarchinitiative.automaxoviewer.view.ViewFactory;
 
+import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.slf4j.Logger;
@@ -33,6 +42,8 @@ public class MainWindowController extends BaseController implements Initializabl
     private final Logger LOGGER = LoggerFactory.getLogger(MainWindowController.class);
 
     private final ObjectProperty<MinimalOntology> hpOntology = new SimpleObjectProperty<>();
+    private final ObjectProperty<MinimalOntology> maxoOntology = new SimpleObjectProperty<>();
+
     @FXML
     public MenuItem newMenuItem;
     @FXML
@@ -51,7 +62,24 @@ public class MainWindowController extends BaseController implements Initializabl
     private StringProperty statusBarTextProperty;
     private Optional<HostServices> hostServicesOpt;
 
-   // private final Model model;
+    @FXML
+    private TableView<AutoMaxoRow> automaxoTableView;
+    @FXML
+    private TableColumn<AutoMaxoRow, String> hpoLabelCol;
+    @FXML
+    private TableColumn<AutoMaxoRow, String> maxoLabelCol;
+    @FXML
+    private TableColumn<AutoMaxoRow, String> relationCol;
+    @FXML
+    private TableColumn<AutoMaxoRow, String> pmidCountCol;
+    @FXML
+    private TableColumn<AutoMaxoRow, String> mondoLabelCol;
+    @FXML
+    private OntologyTermAdder maxoTermAdder;
+    @FXML
+    private OntologyTermAdder hpoTermAdder;
+
+   private Model model;
 
     /** This gets set to true once the Ontology tree has finished initiatializing. Before that
      * we can check to make sure the user does not try to open a disease before the Ontology is
@@ -64,7 +92,7 @@ public class MainWindowController extends BaseController implements Initializabl
 
     public MainWindowController(ViewFactory viewFactory, String fxmlName) {
         super(viewFactory, fxmlName);
-       // model = new Model();
+       model = new Model();
     }
 
     @FXML
@@ -92,7 +120,35 @@ public class MainWindowController extends BaseController implements Initializabl
         this.model.setOptions(viewFactory.getOptions());
     }  */
 
-    /*
+
+    private void loadMaxo(File maxoJsonFile) {
+        if (maxoJsonFile != null && maxoJsonFile.isFile()) {
+            Task<MinimalOntology> maxoLoadTask = new Task<>() {
+                @Override
+                protected MinimalOntology call() {
+                    MinimalOntology minOntology = OntologyLoader.loadOntology(maxoJsonFile);
+                    LOGGER.info("Loaded MAxO, version {}", minOntology.version().orElse("n/a"));
+                    maxoOntology.set(minOntology);
+                    maxoTermAdder.setOntology(maxoOntology.get());
+                    return minOntology;
+                }
+            };
+            maxoLoadTask.setOnSucceeded(e -> {
+                maxoOntology.set(maxoLoadTask.getValue());
+                maxoTermAdder.setOntology(this.maxoOntology.get());
+            });
+            maxoLoadTask.setOnFailed(e -> {
+                LOGGER.warn("Could not load MAxO from {}", maxoJsonFile.getAbsolutePath());
+                maxoOntology.set(null);
+            });
+            Thread thread = new Thread(maxoLoadTask);
+            thread.start();
+        } else {
+            maxoOntology.set(null);
+        }
+    }
+
+
     private void loadHpo(File hpJsonFilePath) {
         if (hpJsonFilePath != null && hpJsonFilePath.isFile()) {
             Task<MinimalOntology> hpoLoadTask = new Task<>() {
@@ -100,13 +156,13 @@ public class MainWindowController extends BaseController implements Initializabl
                 protected MinimalOntology call() {
                     MinimalOntology hpoOntology = OntologyLoader.loadOntology(hpJsonFilePath);
                     LOGGER.info("Loaded HPO, version {}", hpoOntology.version().orElse("n/a"));
-                    parentTermAdder.setOntology(hpOntology.get());
+                    hpoTermAdder.setOntology(hpOntology.get());
                     return hpoOntology;
                 }
             };
             hpoLoadTask.setOnSucceeded(e -> {
                 hpOntology.set(hpoLoadTask.getValue());
-                parentTermAdder.setOntology(this.hpOntology.get());
+                hpoTermAdder.setOntology(this.hpOntology.get());
             });
             hpoLoadTask.setOnFailed(e -> {
                 LOGGER.warn("Could not load HPO from {}", hpJsonFilePath.getAbsolutePath());
@@ -117,35 +173,50 @@ public class MainWindowController extends BaseController implements Initializabl
         } else {
             hpOntology.set(null);
         }
-    }*/
+    }
 
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         LOGGER.trace("Initializing MainWindowController");
         this.hostServicesOpt = this.viewFactory.getHostervicesOpt();
-       // this.gitHubIssueBox.setHostServices(this.hostServicesOpt);
+
         //termLabelValidator.setFieldLabel("New Term Label");
         setUpStatusBar();
         setUpKeyAccelerators();
         setupStatusBarOptions();
-       // loadHpoAndSetupOntologyTree();
+        loadOntologies();
         setUpTableView();
         setupRobotItemHandlers();
-        setUpPmidXrefAdder();
         setUpNewTermReadiness();
     }
 
-
+    /**
+     * This method should be called after we have validated that the three
+     * files needed in the Options are present and valid. This method then
+     * loads the HPO Ontology object and uses it to set up the Ontology Tree
+     * browser on the left of the GUI.
+     */
+    private void loadOntologies() {
+        // Setup event handlers to update HPO in case the user changes path to another one
+        viewFactory.getOptions().hpJsonFileProperty().addListener((obs, old, hpJsonFilePath) -> loadHpo(hpJsonFilePath));
+        viewFactory.getOptions().maxoJsonFileProperty().addListener((obs, old, maxoJsonFilePath) -> loadMaxo(maxoJsonFilePath));
+        loadHpo(viewFactory.getOptions().getHpJsonFile());
+        loadMaxo(viewFactory.getOptions().getMaxoJsonFile());
+        this.model.setOptions(viewFactory.getOptions());
+        // set the labels
+        hpoTermAdder.setLabel("HPO");
+        maxoTermAdder.setLabel("MAxO");
+    }
 
     /**
-     * We are ready to enter a new ROBOT item if we have a valid label, at least one parent term
+     * We are ready to enter a new maxo curation item if we have a valid label, at least one parent term
      * and a valid definition. Here, we bind the new ROBOT item button to the
      * three corresponding Boolean properties.
      */
     private void setUpNewTermReadiness() {
         /*
-        BooleanBinding readyBinding = parentTermAdder.parentTermsReady()
+         BooleanBinding readyBinding = hpoTermAdder.parentTermsReady()
                 .and(termLabelValidator.getIsValidProperty())
                 .and(definitionPane.isReadyProperty());
         this.robotIssueIsReadyProperty.bind(readyBinding);
@@ -157,18 +228,14 @@ public class MainWindowController extends BaseController implements Initializabl
         */
     }
 
-    private void setUpPmidXrefAdder() {
-
-        //this.pmidXrefAdderBox.setViewFactory(this.viewFactory);
-    }
-
-
 
 
     private void clearFields() {
+        hpoTermAdder.clearFields();
+        maxoTermAdder.clearFields();
         /*
         this.termLabelValidator.clearFields();
-        this.parentTermAdder.clearFields();
+
         this.definitionPane.clearFields();
         this.pmidXrefAdderBox.clearFields();
         this.addNewHpoTermBox.clearFields();
@@ -214,107 +281,38 @@ public class MainWindowController extends BaseController implements Initializabl
 
 
     private void setUpTableView() {
-        /*
-        robotTableView.setPlaceholder(new Text("No ROBOT items in table"));
-        robotTableView.setEditable(false);
+        automaxoTableView.setPlaceholder(new Text("Open automaxo file to see items"));
+        // automaxoTableView.setEditable(false); ??
 
-        newTermLabelCol.setCellValueFactory(new PropertyValueFactory<>("newTermLabel"));
-        newTermLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        newTermLabelCol.setEditable(true);
-        definitionCol.setCellValueFactory(new PropertyValueFactory<>("newTermDefinition"));
-        definitionCol.setCellFactory(new Callback<>() {
-            @Override
-            public TableCell<RobotItem, String> call(TableColumn<RobotItem, String> p) {
-                return new TableCell<>() {
-                    @Override
-                    public void updateItem(String item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (item == null) {
-                            setTooltip(null);
-                            setText(null);
-                        } else {
-                            // show just the first 50 chars of the definition
-                            Tooltip tooltip = new Tooltip();
-                            RobotItem robotItem = getTableView().getItems().get(getTableRow().getIndex());
-                            tooltip.setText(robotItem.getNewTermDefinitionProperty().get());
-                            setTooltip(tooltip);
-                            String displayText = item.length() < 50 ? item : item.substring(0,45) + "...";
-                            setText(displayText);
-                        }
-                    }
-                };
-            }
-        });
-        parentTermCol.setCellValueFactory(new PropertyValueFactory<>("parentTermDisplay"));
-        parentTermCol.setCellFactory(new Callback<>() {
-            @Override
-            public TableCell<RobotItem, String> call(TableColumn<RobotItem, String> p) {
-                return new TableCell<>() {
-                    @Override
-                    public void updateItem(String item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (item == null) {
-                            setTooltip(null);
-                            setText(null);
-                        } else {
-                            // show just the first 50 chars of the definition
-                            Tooltip tooltip = new Tooltip();
-                            RobotItem robotItem = getTableView().getItems().get(getTableRow().getIndex());
-                            List<Term> parents = robotItem.getParentTerms();
-                            String displayText = parents.stream().map(Term::getName).collect(Collectors.joining("; "));
-                            tooltip.setText(displayText);
-                            setTooltip(tooltip);
-                            if (parents.isEmpty()) {
-                                // should never happen
-                                displayText = "error - no parent term";
-                            } else {
-                                Term parent = parents.iterator().next();
-                                String name = parent.getName();
-                                displayText = name.length() < 40 ? name : name.substring(0,35) + "...";
-                                if (parents.size() > 1) {
-                                    displayText = String.format("%s (%d)", displayText, parents.size());
-                                }
-                            }
-                            setText(displayText);
-                        }
-                    }
-                };
-            }
-        });
-       pmidsCol.setCellValueFactory(new PropertyValueFactory<>("pmidString"));
-       pmidsCol.setCellFactory(new Callback<>() {
-           @Override
-           public TableCell<RobotItem, String> call(TableColumn<RobotItem, String> p) {
-               return new TableCell<>() {
-                   @Override
-                   public void updateItem(String item, boolean empty) {
-                       super.updateItem(item, empty);
-                       if (item == null) {
-                           setTooltip(null);
-                           setText(null);
-                       } else {
-                           // assume we have 1 or 2 PMIDs and should fit. Consider more customization later
-                           Tooltip tooltip = new Tooltip();
-                           RobotItem robotItem = getTableView().getItems().get(getTableRow().getIndex());
-                           List<String> pmids = robotItem.getPmids();
-                           String displayText = String.join(":", pmids);
-                           tooltip.setText(displayText);
-                           setTooltip(tooltip);
-                           setText(displayText);
-                       }
-                   }
-               };
-           }
-       });
-        issueCol.setCellValueFactory(new PropertyValueFactory<>("issue"));
-        issueCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        this.robotTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN); // do not show "extra column"
-        robotTableView.setOnMouseClicked(e -> {
-            RobotItem item = robotTableView.getSelectionModel().getSelectedItems().get(0);
-            showItemInTable(item);
-        });
+        maxoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().maxoDisplay()));
+        maxoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        maxoLabelCol.setEditable(true);
+        relationCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getRelationship()));
+        relationCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        relationCol.setEditable(true);
 
-         */
+        hpoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().hpoDisplay()));
+        hpoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        hpoLabelCol.setEditable(true);
+
+        pmidCountCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(String.valueOf(cdf.getValue().getCount())));
+        pmidCountCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        pmidCountCol.setEditable(false);
+
+
+        mondoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().mondoDisplay()));
+        mondoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        mondoLabelCol.setEditable(true);
+
+        automaxoTableView.setOnMouseClicked(e -> {
+            AutoMaxoRow item = automaxoTableView.getSelectionModel().getSelectedItems().get(0);
+            showRowInDetail(item);
+        });
+    }
+
+    private void showRowInDetail(AutoMaxoRow item) {
+
+
     }
 
     /**
@@ -449,28 +447,56 @@ public class MainWindowController extends BaseController implements Initializabl
     }
 
 
-
-
-    public void showVersionsAction(ActionEvent actionEvent) {
+    /**
+     * Open a window and show the versions of HPO and MAxO
+     */
+    @FXML
+    public void showVersionsAction(ActionEvent e) {
+        e.consume();
         String hpo_json_version = "n/a";
         if (hpOntology != null) {
             Optional<String> opt = hpOntology.get().version();
             hpo_json_version = opt.orElse("could not retrieve version");
         }
-        PopUps.alertDialog("hp.json version", String.format("hp.json: %s", hpo_json_version));
+        String maxo_json_version = "n/a";
+        if (maxoOntology != null) {
+            Optional<String> opt = maxoOntology.get().version();
+            maxo_json_version = opt.orElse("could not retrieve version");
+        }
+        String msg = String.format("hp.json: %s, maxo.json: %s", hpo_json_version,maxo_json_version);
+        PopUps.alertDialog("Ontology versions", msg);
     }
 
-    public void openAutoMAxO(ActionEvent actionEvent) {
+    public void openAutoMAxO(ActionEvent e) {
+        e.consume();
         File automaxoFile = PopUps.selectFileToOpen(null, new File("."), "AutoMAxO file" );
         if (automaxoFile != null && automaxoFile.isFile()) {
-            List<AutoMaxoItem> items = AutoMaxoItem.parseAutoMaxoItems(automaxoFile);
-            for (var i:items) {
-                System.out.println(i);
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                AutomaxoJson automaxo = objectMapper.readValue(automaxoFile, AutomaxoJson.class);
+                this.model.setTripletItemList(automaxo);
+                populateTable();
+            } catch (Exception exc) {
+                PopUps.showException("Error", exc.getMessage(), "Could not read JSON", exc);
             }
-            System.out.printf("Got %d automaxo items", items.size());
+            String msg = String.format("Got %d automaxo items", model.getTripletItemList().size());
+            PopUps.alertDialog("Success", msg);
+            LOGGER.info(msg);
         } else {
-            System.out.println("Could not get itmes");
+            PopUps.alertDialog("Warning", "Could not get automaxo file");
         }
-
     }
+
+    private void populateTable() {
+        List<TripletItem> tilist = model.getTripletItemList();
+        List<AutoMaxoRow> rowList = tilist.stream().map(AutoMaxoRow::new).toList();
+        javafx.application.Platform.runLater(() -> {
+            LOGGER.trace("populateTable: got a total of {} Automaxo items", rowList.size());
+            automaxoTableView.getItems().clear(); /* clear previous rows, if any */
+            automaxoTableView.getItems().addAll(rowList);
+            automaxoTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        });
+    }
+
+
 }

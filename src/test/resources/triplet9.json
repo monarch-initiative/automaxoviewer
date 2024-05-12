@@ -1,0 +1,79 @@
+{
+  "triplet": {
+    "maxo": "maxo:0001001",
+    "maxo_label": "gene therapy",
+    "non_grounded_maxo": "None",
+    "potential_maxo": [],
+    "relationship": "treats",
+    "hpo": "None",
+    "hpo_label": "",
+    "non_grounded_hpo": "sickle cell disease",
+    "potential_hpo": [],
+    "mondo": "None",
+    "mondo_label": "",
+    "non_grounded_mondo": "",
+    "potential_mondo": [],
+    "maxo_qualifier": "",
+    "chebi": "",
+    "hpo_extension": ""
+  },
+  "count": 9,
+  "source": {
+    "33749705": {
+      "text": "Gene Therapy for Sickle Cell Disease-A Debt to Be Paid. ",
+      "mesh_info": {
+        "D015316": "Genetic Therapy"
+      }
+    },
+    "36485129": {
+      "text": "Knowledge to date on secondary malignancy following hematopoietic cell transplantation for sickle cell disease. Allogeneic hematopoietic cell transplantation, gene therapy, and gene editing offer a potential cure for sickle cell disease (SCD). Unfortunately, myelodysplastic syndrome and acute myeloid leukemia development have been higher than expected after graft rejection following nonmyeloablative conditioning and lentivirus-based gene therapy employing myeloablative busulfan for SCD. Somatic mutations discovered in 2 of 76 patients who rejected their grafts were identified at baseline at much lower levels. While a whole-genome sequencing analysis reported no difference between patients with SCD and controls, a study including whole-exome sequencing revealed a higher prevalence of clonal hematopoiesis in individuals with SCD compared with controls. Genetic risk factors for myeloid malignancy development after curative therapy for SCD are currently being explored. Once discovered, decisions could be made about whether gene therapy may be feasible vs allogeneic hematopoietic cell transplant, which results in full donor chimerism. In the meantime, care should be taken to perform a benefit/risk assessment to help patients identify the best curative approach for them. Long-term follow-up is necessary to monitor for myeloid malignancies and other adverse effects of curative therapies for SCD.",
+      "mesh_info": {
+        "D018380": "Hematopoietic Stem Cell Transplantation",
+        "D019172": "Transplantation Conditioning"
+      }
+    },
+    "33749717": {
+      "text": "A Budget Impact Analysis of Gene Therapy for Sickle Cell Disease: The Medicaid Perspective. Importance: Hundreds of gene therapies are undergoing clinical testing and are likely to be priced more than $1 million per course of treatment. The association that high prices will have with insurance coverage of gene therapy remains unclear. Gene therapy for sickle cell disease has shown early success and would be one of the first gene therapies available for a relatively large population. Objectives: To estimate the budget impact and affordability of a gene therapy for severe sickle cell disease from the perspective of US Medicaid programs with the highest prevalence of sickle cell disease while exploring the impact of an annuity payment model. Design, Setting, and Participants: A budget impact analysis was performed from January 1 to May 31, 2020, for a sickle cell disease gene therapy from the perspective of 10 state Medicaid plans with a 5-year time horizon, using state-level disease prevalence data from 2012. Disease prevalence, Medicaid enrollment, and expenditures were derived from the available literature. The eligible population was based on modified clinical trial inclusion criteria including individuals aged 13 to 45 years with severe disease. Exposures: The gene therapy was assumed to be administered to 7% of the eligible population annually and was curative (no subsequent disease-related expenditures). The gene therapy price was $1.85 million in the base case, and baseline disease-related expenditures were $42 200 per year. Main Outcomes and Measures: The main outcomes were total budget impact and budget impact per member per month in years 1 through 5. One-way sensitivity analysis was used to evaluate uncertainty of market diffusion, size of eligible population, price of therapy, and cost of routine care. Results: An estimated 5464 Medicaid enrollees would be eligible for the gene therapy nationally, with 2315 individuals in the 10 Medicaid programs of interest (16 per 100 000 enrollees). The model projected a mean 1-year budget impact of $29.96 million per state Medicaid program in the sample ($1.91 per member per month). A 5-year annuity payment reduced the short-term budget impact. Conclusions and Relevance: This study suggests that a gene therapy for severe sickle cell disease is likely to produce a considerable budget impact for many Medicaid plans while potentially offering substantial benefit to patients. Payers may need to take steps to ensure affordability and access. Gene therapy for sickle cell disease is likely to provide an early demonstration of the unique financial challenges associated with this emerging drug class.",
+      "mesh_info": {
+        "D015316": "Genetic Therapy"
+      }
+    },
+    "36170507": {
+      "text": "Sickle Cell Disease and Gene Therapy - Patient and Physician Perspectives. ",
+      "mesh_info": {
+        "D015316": "Genetic Therapy"
+      }
+    },
+    "36400544": {
+      "text": "The Evolving Landscape of Drug Therapies for Sickle Cell Disease. Although sickle cell disease can be cured using allogeneic hematopoietic stem cell transplantation and possibly gene therapy and gene editing, these treatments remain unavailable to most patients. As understanding of the disease pathophysiology increases, progress is being made in developing drug therapies. Hydroxyurea, l-glutamine, crizanlizumab, and voxelotor are currently approved by the US Food and Drug Administration, with multiple others at various stages of testing. With the limited efficacy of individual agents, combinations of agents will likely be required for optimal outcomes. Clinical and surrogate endpoints, other than vaso-occlusive crisis, are increasingly being considered in the evaluation of novel drugs.",
+      "mesh_info": {
+        "D018380": "Hematopoietic Stem Cell Transplantation",
+        "D015316": "Genetic Therapy"
+      }
+    },
+    "34232977": {
+      "text": "Introduction to a review series on gene therapy and gene editing for sickle cell disease and hemophilia. ",
+      "mesh_info": {
+        "D015316": "Genetic Therapy"
+      }
+    },
+    "35894560": {
+      "text": "High-Priced Sickle Cell Gene Therapies Threaten to Exacerbate US Health Disparities and Establish New Pricing Precedents for Molecular Medicine. Gene therapies to treat sickle cell disease are in development and are expected to have high costs. The large eligible population size - by far, the largest for a gene therapy - poses daunting budget challenges and threatens to exacerbate health disparities for Black patients, who make up the vast majority of American sickle cell patients.",
+      "mesh_info": {
+        "D015316": "Genetic Therapy"
+      }
+    },
+    "34754124": {
+      "text": "Sickle cell gene therapies approach watershed. ",
+      "mesh_info": {
+        "D015316": "Genetic Therapy"
+      }
+    },
+    "35302009": {
+      "text": "Long-term Survival after Hematopoietic Cell Transplant for Sickle Cell Disease Compared to the United States Population. Hematopoietic cell transplant for sickle cell disease is curative but is associated with life threatening complications most of which occur within the first 2 years after transplantation. In the current era with interest in gene therapy and gene editing we felt it timely to report on sickle cell disease transplant recipients who were alive for at least 2-year after transplantation, not previously reported. Our objectives were to (1) report the conditional survival rates of patients who were alive for 2 or more years after transplantation (2) identify risk factors for death beyond 2 years after transplantation and (3) compare all-cause mortality risks to those of an age-, sex- and race-matched general population in the United States. By limiting to 2-year survivors, we exclude deaths that occur as a direct consequence of the transplantation procedure. De-identified records of 1149 patients were reviewed from a publicly available data source and 950 patients were eligible (https://picsure.biodatacatalyst.nhlbi.nih.gov). All analyses were performed in this secure cloud environment using the available statistical software package(s). The validity of the public database was confirmed by reproducing results from an earlier publication. Conditional survival estimates were obtained using the Kaplan-Meier method for the sub-cohort that had survived a given length (x) of time after transplantation. Cox regression models were built to identify risk factors associated with mortality beyond 2 years after transplantation. The standardized relative mortality risk (SMR) or the ratio of observed to expected number of deaths, was used to quantify all-cause mortality risk after transplantation and compared to age, race and sex-matched general population. Person-years at risk were calculated from an anchor date (i.e., 2-, 5- and 7-years) after transplantation until date of death or last date known alive. The expected number of deaths was calculated using age, race and sex-specific US mortality rates. The median follow up was 5 years (range 2-20) and 300 (32%) patients were observed for more than 7 years. Among those who lived for at least 7 years after transplantation the 12-year probability of survival was 97% (95% CI, 92%-99%). Compared to an age-, race- and sex-matched US population, the risk for late death after transplantation was higher as late as 7 years after transplantation (hazard ratio (HR) 3.2; P= .020) but the risk receded over time. Risk factors for late death included age at transplant and donor type. For every 10-year increment in patient age, an older patient was 1.75 times more likely to die than a younger patient (P= .0004). Compared to HLA-matched siblings the use of other donors was associated with higher risk for late death (HR 3.49; P= .003). Graft failure (beyond 2-years after transplantation) was 7% (95% CI, 5%-9%) and graft failure was higher after transplantation of grafts from donors who were not HLA-matched siblings (HR 2.59, P< .0001). Long-term survival after transplantation is excellent and support this treatment as a cure for sickle cell disease. The expected risk for death recedes over time but the risk for late death is not negligible.",
+      "mesh_info": {
+        "D018380": "Hematopoietic Stem Cell Transplantation"
+      }
+    }
+  }
+}

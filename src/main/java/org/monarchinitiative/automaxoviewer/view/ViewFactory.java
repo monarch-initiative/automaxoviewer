@@ -126,11 +126,9 @@ public class ViewFactory {
             controller.setCurrentOptions(options);
         }
         initializeStageAndWait(controller, "Settings");
-        Optional<Options> opt = controller.getOptions();
-        if (opt.isPresent()) {
-            this.options = opt.get();
-        } else {
-            LOGGER.warn("Could not retrieve valid Options");
+        this.options = controller.getOptions();
+        if (! options.isValid()) {
+            LOGGER.warn("invalid Options");
         }
     }
 

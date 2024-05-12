@@ -107,20 +107,7 @@ public class MainWindowController extends BaseController implements Initializabl
      * files needed in the Options are present and valid. This method then
      * loads the HPO Ontology object and uses it to set up the Ontology Tree
      * browser on the left of the GUI.
-
-    private void loadHpoAndSetupOntologyTree() {
-        ontologyTree.addHookProperty().set(this::addPhenotypeTerm);
-        ontologyTree.ontologyProperty().bind(hpOntology);
-
-
-        // Setup event handlers to update HPO in case the user changes path to another one
-        viewFactory.getOptions().hpJsonFileProperty().addListener((obs, old, hpJsonFilePath) -> loadHpo(hpJsonFilePath));
-        // Do the actual loading..
-        loadHpo(viewFactory.getOptions().getHpJsonFile());
-        this.model.setOptions(viewFactory.getOptions());
-    }  */
-
-
+*/
     private void loadMaxo(File maxoJsonFile) {
         if (maxoJsonFile != null && maxoJsonFile.isFile()) {
             Task<MinimalOntology> maxoLoadTask = new Task<>() {

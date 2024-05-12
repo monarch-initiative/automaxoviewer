@@ -24,7 +24,7 @@
             </Menu>
             <Menu mnemonicParsing="false" text="Edit">
                 <MenuItem fx:id="optionsMenuItem" mnemonicParsing="false" onAction="#optionsAction" text="Options" />
-                <MenuItem fx:id="showVersionsMenuItem" mnemonicParsing="false" onAction="#showVersionsAction" text="Show version" />
+                <MenuItem mnemonicParsing="false" onAction="#showVersionsAction" text="Show version" />
             </Menu>
             <Menu fx:id="templatesMenu" mnemonicParsing="false" text="Templates" />
             <Menu mnemonicParsing="false" text="Help">

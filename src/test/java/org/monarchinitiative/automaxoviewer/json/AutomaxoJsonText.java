@@ -24,7 +24,7 @@ public class AutomaxoJsonText {
         assertEquals( "maxo:0000004", tripletItem1.getTriplet().getMaxo());
         assertEquals( "surgery", tripletItem1.getTriplet().getMaxo_label());
         assertEquals(0, tripletItem1.getTriplet().getPotential_maxo().length);
-         assertTrue(tripletItem1.getSource().containsKey("37567029"));
+        assertTrue(tripletItem1.getSource().containsKey("37567029"));
     }
 
 

@@ -122,11 +122,11 @@ public class OptionsWindowController extends BaseController implements Initializ
     }
 
     /**
-     * Download the hp.json file to $HOME/.hpo2robot/hp.json
+     * Download the hp.json file to $HOME/.automaxoviewer/hp.json
      */
-    public void downloadJson(ActionEvent e) {
+    public void downloadHpoJson(ActionEvent e) {
         e.consume();
-        File hpo2robotDir = Platform.getHpo2RobotDir();
+        File hpo2robotDir = Platform.getAutomaxoDir();
         Path hpJsonPath = Paths.get(String.valueOf(hpo2robotDir), "hp.json");
 
         try {
@@ -148,7 +148,6 @@ public class OptionsWindowController extends BaseController implements Initializ
         Optional<String> opt = UserStringFetcher.fetchORCID();
         if (opt.isPresent()) {
             String orcid = opt.get();
-            //this.options.setOrcid(orcid);
             this.orcidProperty.set(orcid);
         } else {
             LOGGER.warn("Could not retrieve ORCID from user");
@@ -185,7 +184,24 @@ public class OptionsWindowController extends BaseController implements Initializ
         this.orcidProperty.set(options.getOrcid());
     }
 
+    /**
+     * Download the hp.json file to $HOME/.automaxoviewer/hp.json
+     */
 
-    public void downloadMaxo(ActionEvent actionEvent) {
+    public void downloadMaxo(ActionEvent e) {
+        e.consume();
+        File automaxoDir = Platform.getAutomaxoDir();
+        Path maxoJsonPath = Paths.get(String.valueOf(automaxoDir), "maxo.json");
+        try {
+            URL hpoJson = new URL("http://purl.obolibrary.org/obo/maxo.json");
+            FileDownloader downloader = new FileDownloader();
+            downloader.copyURLToFile(hpoJson, maxoJsonPath.toFile());
+        } catch (MalformedURLException ex) {
+            LOGGER.error("Could not download maxo.json: {}", ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+        // if we get here, download was successful
+        maxoJsonProperty.set(maxoJsonPath.toFile().getAbsolutePath());
+
     }
 }

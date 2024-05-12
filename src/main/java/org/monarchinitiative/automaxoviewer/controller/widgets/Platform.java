@@ -18,7 +18,7 @@ public class Platform {
      * currently supported.
      * @return File to directory
      */
-    public static File getHpo2RobotDir() {
+    public static File getAutomaxoDir() {
         CurrentPlatform platform = figureOutPlatform();
         final String APPLICATION_NAME = "automaxoviewer";
         final String USER_HOME = System.getProperty("user.home");
@@ -57,7 +57,7 @@ public class Platform {
 
 
     public static File getHpo2RobotOptionsFile() {
-        File dir = getHpo2RobotDir();
+        File dir = getAutomaxoDir();
         File file = new File(dir + File.separator + "hpo2robot.txt");
         if (! file.isFile()) {
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
@@ -70,7 +70,7 @@ public class Platform {
     }
 
     public static File getSkippedIssueFile() {
-        File dir = getHpo2RobotDir();
+        File dir = getAutomaxoDir();
         File file = new File(dir + File.separator + "hpo2robot-skipped-issues.txt");
         if (! file.isFile()) {
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
@@ -102,7 +102,7 @@ public class Platform {
      * @return the absolute path,e.g., /home/user/.hpo2robot/hpo2robot.log
      */
     public static String getAbsoluteLogPath() {
-        File dir = getHpo2RobotDir();
+        File dir = getAutomaxoDir();
         return dir + File.separator +  "hpo2robot.log";
     }
 

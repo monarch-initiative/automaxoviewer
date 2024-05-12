@@ -20,14 +20,15 @@
          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
-        <Button fx:id="hpJsonButton" mnemonicParsing="false" onAction="#downloadJson" text="Download" GridPane.columnIndex="1" />
+        <Button fx:id="hpJsonButton" mnemonicParsing="false" onAction="#downloadHpoJson" text="Download" GridPane.columnIndex="1" />
         <Label fx:id="hpJsonLabel" text="not initialized" GridPane.columnIndex="2" />
-        <Button fx:id="orcidButton" mnemonicParsing="false" onAction="#setORCID" text="Set" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+        <Button fx:id="orcidButton" mnemonicParsing="false" onAction="#setORCID" text="Set ORCID" GridPane.columnIndex="1" GridPane.rowIndex="2" />
         <Label fx:id="orcidLabel" text="not initialized" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-      <Label text="hp.json" />
+     <Label text="hp.json" />
+        <Label text="maxo.json" GridPane.rowIndex="1" />
       <Label text="ORCID ID" GridPane.rowIndex="2" />
-      <Label text="hpo/src/ontology folder" GridPane.rowIndex="1" />
-      <Button fx:id="maxoJsonButton" mnemonicParsing="false" onAction="#downloadMaxo" text="Set" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+      <Button fx:id="maxoJsonButton" mnemonicParsing="false" onAction="#downloadMaxo" text="Download" GridPane.columnIndex="1" GridPane.rowIndex="1" />
       <Label fx:id="maxoJsonLabel" text="not initialized" GridPane.columnIndex="2" GridPane.rowIndex="1" />
     </GridPane>
     <VBox fx:id="buttonBox" layoutX="325.0" layoutY="339.0" AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="20.0">

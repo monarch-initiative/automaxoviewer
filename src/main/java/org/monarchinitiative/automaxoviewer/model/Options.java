@@ -49,10 +49,10 @@ public class Options implements Serializable {
 
     private boolean isUninitialzedOrValid(String jsonPath) {
         if (jsonPath == null) return false;
-        if (jsonPath == "not initialized") return true;
+        if (jsonPath.equals("not initialized")) return true;
         File jsonFile = new File(jsonPath);
         if (jsonFile.getAbsolutePath().isEmpty()) return true; // uninitialized, OK
-        return  (! jsonFile.getName().contains(".json"));
+        return  (jsonFile.getName().contains(".json"));
     }
 
     public Options(String hpJsonFile, String maxoJsonFile, String orcid) {

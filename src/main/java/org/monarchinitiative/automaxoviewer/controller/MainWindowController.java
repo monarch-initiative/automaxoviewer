@@ -9,10 +9,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.*;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -526,7 +524,7 @@ public class MainWindowController extends BaseController implements Initializabl
         List<TripletItem> tilist = model.getTripletItemList();
         List<AutoMaxoRow> rowList = tilist.stream().map(AutoMaxoRow::new).toList();
         javafx.application.Platform.runLater(() -> {
-            LOGGER.trace("populateTable: got a total of " + rowList.size() + " Automaxo items");
+            LOGGER.trace("populateTable: got a total of {} Automaxo items", rowList.size());
             automaxoTableView.getItems().clear(); /* clear previous rows, if any */
             automaxoTableView.getItems().addAll(rowList);
             automaxoTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);

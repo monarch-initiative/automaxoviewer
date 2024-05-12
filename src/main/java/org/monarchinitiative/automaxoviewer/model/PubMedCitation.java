@@ -23,4 +23,19 @@ public class PubMedCitation {
         meshInfo = source.getMesh_info();
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public String getAbstractText() {
+        return abstractText;
+    }
+
+    public TermId getPmidTermId() {
+        return pmidTermId;
+    }
+
+    public Map<String, String> getMeshInfo() {
+        return meshInfo;
+    }
 }

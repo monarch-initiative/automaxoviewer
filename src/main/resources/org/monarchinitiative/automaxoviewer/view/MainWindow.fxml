@@ -15,6 +15,10 @@
 <?import javafx.scene.web.WebView?>
 
 <?import org.monarchinitiative.automaxoviewer.view.OntologyTermAdder?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
 <BorderPane prefHeight="1000.0" prefWidth="1400.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.monarchinitiative.automaxoviewer.controller.MainWindowController">
     <top>
         <MenuBar prefHeight="23.0" prefWidth="1200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -66,9 +70,15 @@
                 </HBox>
                 <OntologyTermAdder fx:id="maxoTermAdder"/>
                 <OntologyTermAdder fx:id="hpoTermAdder"/>
+                <HBox><ChoiceBox fx:id="relationCB"/>
+                    <Label>"Disease level?"</Label>
+                    <CheckBox fx:id="diseaseLevelAnnotationCheckBox"/>
+                </HBox>
+                <HBox><Label>View new abstract</Label><Button fx:id="nextAbstractButton" onAction="#viewNextAbstract">Create annotation</Button></HBox>
+                <HBox><Label>Create Annotation</Label><Button fx:id="createAnnotButton" onAction="#createAnnot">Create annotation</Button></HBox>
             </VBox>
 
-                <WebView fx:id="currentRobotView" />
+                <WebView fx:id="currentAutoMaxoWebView" />
         </VBox>
     </center>
     <bottom>

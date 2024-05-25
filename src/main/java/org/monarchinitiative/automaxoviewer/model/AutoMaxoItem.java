@@ -63,7 +63,7 @@ public class AutoMaxoItem {
         if (! tidString.contains(":")) {
             tidString = String.format("%s:%s", expectedPrefix, tidString);
         }
-        String fields [] = tidString.split(":");
+        String[] fields = tidString.split(":");
         if (fields.length != 2) {
             LOGGER.error("Malformed ontology term: \"{}\".", tidString);
             return null;
@@ -93,7 +93,7 @@ public class AutoMaxoItem {
         try (BufferedReader br = new BufferedReader(new FileReader(source))) {
            String line;
            while ((line = br.readLine()) != null) {
-               String fields[] = line.split("\t");
+               String[] fields = line.split("\t");
                String pmid = fields[0];
                String subject = fields[1];
                String subjtLabel = fields[2];

@@ -3,7 +3,7 @@ package org.monarchinitiative.automaxoviewer.view;
 public class MaxoVisualizer {
 
     protected static final String CSS = """
-                        
+            
             /*//////////////////////////////////////////////////////////////////
          
             /*//////////////////////////////////////////////////////////////////
@@ -388,7 +388,7 @@ public class MaxoVisualizer {
     protected final static String HTML_FOOT = """
             </tbody>
             </table>
-            </div>         
+            </div>
             </div>
             </div>
             </div>

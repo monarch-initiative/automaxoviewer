@@ -19,7 +19,6 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
 import org.monarchinitiative.automaxoviewer.json.AutomaxoJson;
@@ -48,6 +47,7 @@ public class MainWindowController extends BaseController implements Initializabl
 
     private final ObjectProperty<MinimalOntology> hpOntology = new SimpleObjectProperty<>();
     private final ObjectProperty<MinimalOntology> maxoOntology = new SimpleObjectProperty<>();
+    private final ObjectProperty<MinimalOntology> mondoOntology = new SimpleObjectProperty<>();
 
     @FXML
     public MenuItem newMenuItem;
@@ -65,6 +65,8 @@ public class MainWindowController extends BaseController implements Initializabl
     public CheckBox diseaseLevelAnnotationCheckBBox;
     @FXML
     public Button nextAbstractButton;
+    @FXML
+    public OntologyTermAdder mondoTermAdder;
 
     @FXML
     private VBox statusBar;
@@ -173,6 +175,32 @@ public class MainWindowController extends BaseController implements Initializabl
         }
     }
 
+    private void loadMondo(File mondoJsonFilePath) {
+        if (mondoJsonFilePath != null && mondoJsonFilePath.isFile()) {
+            Task<MinimalOntology> mondoLoadTask = new Task<>() {
+                @Override
+                protected MinimalOntology call() {
+                    MinimalOntology hpoOntology = OntologyLoader.loadOntology(mondoJsonFilePath);
+                    LOGGER.info("Loaded HPO, version {}", hpoOntology.version().orElse("n/a"));
+                    hpoTermAdder.setOntology(hpOntology.get());
+                    return hpoOntology;
+                }
+            };
+            mondoLoadTask.setOnSucceeded(e -> {
+                mondoOntology.set(mondoLoadTask.getValue());
+                mondoTermAdder.setOntology(this.mondoOntology.get());
+            });
+            mondoLoadTask.setOnFailed(e -> {
+                LOGGER.warn("Could not load HPO from {}", mondoJsonFilePath.getAbsolutePath());
+                mondoOntology.set(null);
+            });
+            Thread thread = new Thread(mondoLoadTask);
+            thread.start();
+        } else {
+            mondoOntology.set(null);
+        }
+    }
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -224,12 +252,14 @@ public class MainWindowController extends BaseController implements Initializabl
         // Setup event handlers to update HPO in case the user changes path to another one
         viewFactory.getOptions().hpJsonFileProperty().addListener((obs, old, hpJsonFilePath) -> loadHpo(hpJsonFilePath));
         viewFactory.getOptions().maxoJsonFileProperty().addListener((obs, old, maxoJsonFilePath) -> loadMaxo(maxoJsonFilePath));
+        viewFactory.getOptions().mondoJsonFileProperty().addListener((obs,old, mondoJsonFilePath) -> loadMondo(mondoJsonFilePath));
         loadHpo(viewFactory.getOptions().getHpJsonFile());
         loadMaxo(viewFactory.getOptions().getMaxoJsonFile());
         this.model.setOptions(viewFactory.getOptions());
         // set the labels
         hpoTermAdder.setLabel("HPO");
         maxoTermAdder.setLabel("MAxO");
+        mondoTermAdder.setLabel("Mondo");
     }
 
     /**

@@ -7,10 +7,10 @@ import java.util.Map;
 
 public class PubMedCitation {
 
-    private String title;
-    private String abstractText;
-    private TermId pmidTermId;
-    private Map<String, String> meshInfo;
+    private final String title;
+    private final String abstractText;
+    private final TermId pmidTermId;
+    private final Map<String, String> meshInfo;
 
     public PubMedCitation(String pmid, PubMedSource source) {
         if (pmid.startsWith("PMID:")) {

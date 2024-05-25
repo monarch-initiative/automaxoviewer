@@ -1,6 +1,7 @@
 package org.monarchinitiative.automaxoviewer.model;
 
 
+import org.monarchinitiative.automaxoviewer.json.PotentialOntologyTerm;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 
 import java.util.ArrayList;
@@ -17,16 +18,16 @@ public class AutoMaxoRow {
     private String maxoId;
     private  String maxoLabel;
     private  String nonGroundedMaxo;
-    private List<String> potentialMaxo;
+    private List<PotentialOntologyTerm> potentialMaxo;
     private  String relationship;
     private  String hpoId;
     private  String hpoLabel;
     private  String nonGroundedHpo;
-    private  List<String> potentialHpo;
+    private  List<PotentialOntologyTerm> potentialHpo;
     private  String mondoId;
     private  String mondoLabel;
     private  String nonGroundedMondo;
-    private  List<String> potentialMondo;
+    private  List<PotentialOntologyTerm> potentialMondo;
     private  String maxoQualifier;
     private  String chebi;
     private  String hpoExtension;
@@ -82,11 +83,11 @@ public class AutoMaxoRow {
         this.nonGroundedMaxo = nonGroundedMaxo;
     }
 
-    public List<String> getPotentialMaxo() {
+    public List<PotentialOntologyTerm> getPotentialMaxo() {
         return potentialMaxo;
     }
 
-    public void setPotentialMaxo(List<String> potentialMaxo) {
+    public void setPotentialMaxo(List<PotentialOntologyTerm> potentialMaxo) {
         this.potentialMaxo = potentialMaxo;
     }
 
@@ -122,11 +123,11 @@ public class AutoMaxoRow {
         this.nonGroundedHpo = nonGroundedHpo;
     }
 
-    public List<String> getPotentialHpo() {
+    public List<PotentialOntologyTerm> getPotentialHpo() {
         return potentialHpo;
     }
 
-    public void setPotentialHpo(List<String> potentialHpo) {
+    public void setPotentialHpo(List<PotentialOntologyTerm> potentialHpo) {
         this.potentialHpo = potentialHpo;
     }
 
@@ -154,11 +155,11 @@ public class AutoMaxoRow {
         this.nonGroundedMondo = nonGroundedMondo;
     }
 
-    public List<String> getPotentialMondo() {
+    public List<PotentialOntologyTerm> getPotentialMondo() {
         return potentialMondo;
     }
 
-    public void setPotentialMondo(List<String> potentialMondo) {
+    public void setPotentialMondo(List<PotentialOntologyTerm> potentialMondo) {
         this.potentialMondo = potentialMondo;
     }
 
@@ -208,7 +209,7 @@ public class AutoMaxoRow {
         } else if (! nonGroundedMaxo.isEmpty()) {
             return String.format("Non-grounded: %s", nonGroundedMaxo);
         } else if (! potentialMaxo.isEmpty()) {
-            String candidates = potentialMaxo.stream().collect(Collectors.joining("; "));
+            String candidates = potentialMaxo.stream().map(PotentialOntologyTerm::getLabel).collect(Collectors.joining("; "));
             return String.format("Potential: %s", candidates);
         } else {
             return "n/a";
@@ -221,7 +222,7 @@ public class AutoMaxoRow {
         } else if (! nonGroundedHpo.isEmpty()) {
             return String.format("Non-grounded: %s", nonGroundedHpo);
         } else if (! potentialHpo.isEmpty()) {
-            String candidates = potentialHpo.stream().collect(Collectors.joining("; "));
+            String candidates = potentialHpo.stream().map(PotentialOntologyTerm::getLabel).collect(Collectors.joining("; "));
             return String.format("Potential: %s", candidates);
         } else {
             return "n/a";
@@ -234,7 +235,7 @@ public class AutoMaxoRow {
         } else if (! nonGroundedMondo.isEmpty()) {
             return String.format("Non-grounded: %s", nonGroundedMondo);
         } else if (! potentialMondo.isEmpty()) {
-            String candidates = potentialMondo.stream().collect(Collectors.joining("; "));
+            String candidates = potentialMondo.stream().map(PotentialOntologyTerm::getLabel).collect(Collectors.joining("; "));
             return String.format("Potential: %s", candidates);
         } else {
             return "n/a";

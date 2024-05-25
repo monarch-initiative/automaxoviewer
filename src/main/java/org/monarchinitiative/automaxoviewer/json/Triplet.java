@@ -9,16 +9,16 @@ public class Triplet {
     private  String maxo;
     private  String maxo_label;
     private  String non_grounded_maxo;
-    private  String [] potential_maxo;
+    private  PotentialOntologyTerm[] potential_maxo;
     private  String relationship;
     private  String hpo;
     private  String hpo_label;
     private  String non_grounded_hpo;
-    private  String [] potential_hpo;
+    private  PotentialOntologyTerm[] potential_hpo;
     private  String mondo;
     private  String mondo_label;
     private  String non_grounded_mondo;
-    private  String [] potential_mondo;
+    private  PotentialOntologyTerm[] potential_mondo;
     private  String maxo_qualifier;
     private  String chebi;
     private  String hpo_extension;
@@ -27,16 +27,16 @@ public class Triplet {
     public Triplet(@JsonProperty("maxo") String maxo,
                    @JsonProperty("maxo_label") String maxoLabel,
                    @JsonProperty("non_grounded_maxo") String nonGroundedMaxo,
-                   @JsonProperty("potential_maxo") String [] potentialMaxo,
+                   @JsonProperty("potential_maxo") PotentialOntologyTerm[] potentialMaxo,
                    @JsonProperty("relationship") String relationship,
                    @JsonProperty("hpo") String hpo,
                    @JsonProperty("hpo_label") String hpoLabel,
                    @JsonProperty("non_grounded_hpo") String nonGroundedHpo,
-                   @JsonProperty("potential_hpo") String [] potentialHpo,
+                   @JsonProperty("potential_hpo") PotentialOntologyTerm[] potentialHpo,
                    @JsonProperty("mondo") String mondo,
                    @JsonProperty("mondo_label") String mondoLabel,
                    @JsonProperty("non_grounded_mondo") String nonGroundedMondo,
-                   @JsonProperty("potential_mondo") String [] potentialMondo,
+                   @JsonProperty("potential_mondo") PotentialOntologyTerm[] potentialMondo,
                    @JsonProperty("maxo_qualifier") String maxoQualifier,
                    @JsonProperty("chebi") String chebi,
                    @JsonProperty("hpo_extension") String hpoExtension) {
@@ -71,7 +71,7 @@ public class Triplet {
         return non_grounded_maxo;
     }
     @JsonGetter("potential_maxo")
-    public String [] getPotential_maxo() {
+    public PotentialOntologyTerm[] getPotential_maxo() {
         return potential_maxo;
     }
     @JsonGetter("relationship")
@@ -91,7 +91,7 @@ public class Triplet {
         return non_grounded_hpo;
     }
     @JsonGetter("potential_hpo")
-    public String [] getPotential_hpo() {
+    public PotentialOntologyTerm[] getPotential_hpo() {
         return potential_hpo;
     }
     @JsonGetter("mondo")
@@ -107,7 +107,7 @@ public class Triplet {
         return non_grounded_mondo;
     }
     @JsonGetter("potential_mondo")
-    public String [] getPotential_mondo() {
+    public PotentialOntologyTerm[] getPotential_mondo() {
         return potential_mondo;
     }
     @JsonGetter("maxo_qualifier")
@@ -135,7 +135,7 @@ public class Triplet {
         this.non_grounded_maxo = non_grounded_maxo;
     }
 
-    public void setPotential_maxo(String [] potential_maxo) {
+    public void setPotential_maxo(PotentialOntologyTerm[] potential_maxo) {
         this.potential_maxo = potential_maxo;
     }
 
@@ -155,7 +155,7 @@ public class Triplet {
         this.non_grounded_hpo = non_grounded_hpo;
     }
 
-    public void setPotential_hpo(String [] potential_hpo) {
+    public void setPotential_hpo(PotentialOntologyTerm[] potential_hpo) {
         this.potential_hpo = potential_hpo;
     }
 
@@ -171,7 +171,7 @@ public class Triplet {
         this.non_grounded_mondo = non_grounded_mondo;
     }
 
-    public void setPotential_mondo(String [] potential_mondo) {
+    public void setPotential_mondo(PotentialOntologyTerm[] potential_mondo) {
         this.potential_mondo = potential_mondo;
     }
 

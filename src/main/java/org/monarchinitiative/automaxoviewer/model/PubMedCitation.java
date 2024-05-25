@@ -18,8 +18,8 @@ public class PubMedCitation {
         } else {
             pmidTermId = TermId.of(String.format("PMID:%s", pmid));
         }
-        title = source.getText();
-        abstractText = source.getText();
+        title = source.getTitle();
+        abstractText = source.getAbstract();
         meshInfo = source.getMesh_info();
     }
 

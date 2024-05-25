@@ -15,12 +15,12 @@ public class PubMedSourceTest {
     @Test
     public void whenSerializingUsingJsonPropertyOrder_thenCorrect()
             throws JsonProcessingException {
-
-        String text = "Renal Medullary Carcinoma: A Surveillance, Epidemiology, and End Results (SEER) Analysis.";
+        String title = "Renal Medullary Carcinoma";
+        String abstractText = "A Surveillance, Epidemiology, and End Results (SEER) Analysis.";
         Map<String,String> mesh_info_map = new HashMap<>();
         mesh_info_map.put("D011379", "Prognosis");
 
-        PubMedSource bean = new PubMedSource(text, mesh_info_map);
+        PubMedSource bean = new PubMedSource(title, abstractText, mesh_info_map);
 
         String result = new ObjectMapper().writeValueAsString(bean);
         assertTrue(result.contains("Renal Medullary Carcinoma"));

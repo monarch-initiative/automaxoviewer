@@ -19,11 +19,14 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
 import org.monarchinitiative.automaxoviewer.json.AutomaxoJson;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 import org.monarchinitiative.automaxoviewer.model.AutoMaxoRow;
 import org.monarchinitiative.automaxoviewer.model.Model;
+import org.monarchinitiative.automaxoviewer.view.CurrentItemVisualizable;
 import org.monarchinitiative.automaxoviewer.view.OntologyTermAdder;
 import org.monarchinitiative.automaxoviewer.view.PmidAbstractTextVisualizer;
 import org.monarchinitiative.automaxoviewer.view.ViewFactory;
@@ -60,6 +63,8 @@ public class MainWindowController extends BaseController implements Initializabl
     public ChoiceBox<String> relationCB;
     @FXML
     public CheckBox diseaseLevelAnnotationCheckBBox;
+    @FXML
+    public Button nextAbstractButton;
 
     @FXML
     private VBox statusBar;
@@ -505,6 +510,7 @@ public class MainWindowController extends BaseController implements Initializabl
                 ObjectMapper objectMapper = new ObjectMapper();
                 AutomaxoJson automaxo = objectMapper.readValue(automaxoFile, AutomaxoJson.class);
                 this.model.setTripletItemList(automaxo);
+                this.model.setAutomaxoFile(automaxoFile);
                 populateTable();
             } catch (Exception exc) {
                 PopUps.showException("Error", exc.getMessage(), "Could not read JSON", exc);
@@ -534,16 +540,52 @@ public class MainWindowController extends BaseController implements Initializabl
     }
 
     public void viewNextAbstract(ActionEvent actionEvent) {
-        WebEngine engine = this.currentAutoMaxoWebView.getEngine();
-        var visualizer = new PmidAbstractTextVisualizer();
-        int n = model.getNextAbstractCount();
-        /*Optional<Term> hpoOpt = this.hpoTermAdder.getTermIfValid();
-        Optional<Term> maxoOpt = this.hpoTermAdder.getTermIfValid();
-        String hpoLabel = hpoOpt.isPresent() ? hpoOpt.get().getName() : "";
-        String maxoLabel = hpoOpt.isPresent() ? maxoOpt.get().getName() : "";
+        viewCurrentItem(model);
+    }
 
-         */
-        String html = visualizer.toHTML(model.getCurrentRow(), n);
+
+    public void viewCurrentItem(Model model) {
+        AutoMaxoRow currentRow = model.getCurrentRow();
+        WebEngine engine = this.currentAutoMaxoWebView.getEngine();
+        Optional<Integer> opt = model.getNextAbstractCount();
+        var visualizer = new PmidAbstractTextVisualizer();
+        String html;
+        if (opt.isEmpty()) {
+            html = visualizer.getHtmlNoAbstract();
+            engine.loadContent(html);
+            return;
+        }
+        Optional<Term> optHpo = this.hpoTermAdder.getTermIfValid();
+        Term hpo = optHpo.orElse(null);
+        Optional<Term> optMaxo = this.maxoTermAdder.getTermIfValid();
+        Term maxo = optMaxo.orElse(null);
+        int totalAnnotationsToDate = 42;
+        Optional<File> optAnnotFile = model.getAnnotationFile();
+        String annotationFile;
+        annotationFile = optAnnotFile.map(File::getAbsolutePath).orElse("n/a");
+        Optional<File> automaxoFileOpt = this.model.getAutomaxoFile();
+        String inputFile;
+        inputFile = automaxoFileOpt.map(File::getAbsolutePath).orElse("n/a");
+        Optional<Term> optDisease = Optional.empty();
+        Term mondo = optDisease.orElse(null);
+        CurrentItemVisualizable visualisable = new CurrentItemVisualizable(currentRow,
+                hpo,
+                maxo,
+                mondo,
+                totalAnnotationsToDate,
+                annotationFile,
+                inputFile);
+        html = visualizer.toHTML(visualisable, opt.get());
         engine.loadContent(html);
+    }
+
+    @FXML
+    public void openAnnotationFile(ActionEvent actionEvent) {
+        Window stage = this.relationCB.getScene().getWindow();
+        Optional<File> opt = PopUps.selectOrCreateInputFile(stage);
+        if (opt.isPresent()) {
+            File annotFile = opt.get();
+            model.setAnnotationFile(annotFile);
+        }
     }
 }

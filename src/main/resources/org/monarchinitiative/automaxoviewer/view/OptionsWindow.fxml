@@ -8,31 +8,37 @@
 <?import javafx.scene.layout.RowConstraints?>
 
 <?import javafx.scene.layout.VBox?>
-<AnchorPane prefHeight="200.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.monarchinitiative.automaxoviewer.controller.OptionsWindowController">
-      <GridPane layoutX="70.0" layoutY="219.0" prefHeight="90.0" prefWidth="428.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="40.0">
+<AnchorPane prefHeight="200.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.monarchinitiative.automaxoviewer.controller.OptionsWindowController">
+    <GridPane layoutX="70.0" layoutY="219.0" prefHeight="90.0" prefWidth="428.0" AnchorPane.bottomAnchor="50.0"
+              AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="40.0">
         <columnConstraints>
-         <ColumnConstraints hgrow="SOMETIMES" maxWidth="169.0" minWidth="80.0" prefWidth="142.0" />
-            <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="10.0" prefWidth="163.0" />
-            <ColumnConstraints hgrow="SOMETIMES" maxWidth="416.0" minWidth="387.0" prefWidth="415.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="169.0" minWidth="80.0" prefWidth="142.0"/>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="10.0" prefWidth="163.0"/>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="416.0" minWidth="387.0" prefWidth="415.0"/>
         </columnConstraints>
         <rowConstraints>
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
         </rowConstraints>
-        <Button fx:id="hpJsonButton" mnemonicParsing="false" onAction="#downloadHpoJson" text="Download" GridPane.columnIndex="1" />
-        <Label fx:id="hpJsonLabel" text="not initialized" GridPane.columnIndex="2" />
-        <Button fx:id="orcidButton" mnemonicParsing="false" onAction="#setORCID" text="Set ORCID" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-        <Label fx:id="orcidLabel" text="not initialized" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-     <Label text="hp.json" />
-        <Label text="maxo.json" GridPane.rowIndex="1" />
-      <Label text="ORCID ID" GridPane.rowIndex="2" />
-
-      <Button fx:id="maxoJsonButton" mnemonicParsing="false" onAction="#downloadMaxoJson" text="Download" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-      <Label fx:id="maxoJsonLabel" text="not initialized" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+        <Label text="hp.json" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <Button fx:id="hpJsonButton" mnemonicParsing="false" onAction="#downloadHpoJson" text="Download" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Label fx:id="hpJsonLabel" text="not initialized" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+        <Label text="maxo.json" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <Button fx:id="maxoJsonButton" mnemonicParsing="false" onAction="#downloadMaxoJson" text="Download" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Label fx:id="maxoJsonLabel" text="not initialized" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+        <Label text="mondo.json" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <Button fx:id="mondoJsonButton" mnemonicParsing="false" onAction="#downloadMondoJson" text="Download"  GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Label fx:id="mondoJsonLabel" text="not initialized" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+        <Label text="ORCID ID" GridPane.columnIndex="0"  GridPane.rowIndex="3"/>
+        <Button fx:id="orcidButton" mnemonicParsing="false" onAction="#setORCID" text="Set ORCID" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <Label fx:id="orcidLabel" text="not initialized" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
     </GridPane>
-    <VBox fx:id="buttonBox" layoutX="325.0" layoutY="339.0" AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="20.0">
-        <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelButtonAction" text="Cancel"  />
-        <Button fx:id="okButton" layoutX="455.0" layoutY="340.0" mnemonicParsing="false" onAction="#okButtonAction" text="OK"  />
+    <VBox fx:id="buttonBox" layoutX="325.0" layoutY="339.0" AnchorPane.bottomAnchor="20.0"
+          AnchorPane.rightAnchor="20.0">
+        <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelButtonAction" text="Cancel"/>
+        <Button fx:id="okButton" layoutX="455.0" layoutY="340.0" mnemonicParsing="false" onAction="#okButtonAction"
+                text="OK"/>
     </VBox>
 </AnchorPane>

@@ -5,15 +5,7 @@ public class MaxoVisualizer {
     protected static final String CSS = """
                         
             /*//////////////////////////////////////////////////////////////////
-            [ FONT ]*/
-            @font-face {
-            font-family: Montserrat-Regular;
-            src: url('../fonts/montserrat/Montserrat-Regular.ttf');
-            }
-            @font-face {
-            font-family: Montserrat-Medium;
-            src: url('../fonts/montserrat/Montserrat-Medium.ttf');
-            }
+         
             /*//////////////////////////////////////////////////////////////////
             [ RESTYLE TAG ]*/
             body, html {
@@ -75,7 +67,7 @@ public class MaxoVisualizer {
             .container-table100 {
             width: 100%;
             min-height: 100vh;
-            background: #d1d1d1;
+            background: white;
             display: -webkit-box;
             display: -webkit-flex;
             display: -moz-box;

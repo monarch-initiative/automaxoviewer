@@ -28,7 +28,7 @@ public class PmidAbstractTextVisualizer extends MaxoVisualizer  {
 
 
     private String para(AutoMaxoRow row, int count) {
-        return String.format("<h1>Abstract %d/%d</h1>\n", count, row.getCitationList().size());
+        return String.format("<h1>Abstract %d/%d</h1>\n", (1+count), row.getCitationList().size());
     }
 
     private Set<String> stopWords = Set.of("the", "of", "a", "an", "that");
@@ -60,16 +60,31 @@ public class PmidAbstractTextVisualizer extends MaxoVisualizer  {
     }
 
 
+    public String getIntroPara(CurrentItemVisualizable vis) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("<p>").append("Annotation: ").append(vis.getMondoString()).append(": ")
+                .append(vis.getMaxoString()).append(": ").append(vis.getHpoString()).append("</p>");
+        builder.append("<ul style=\"font-size:8px;\">\n");
+        builder.append("<li>Total annotations for this disease: ").append(vis.getTotalAnnots()).append("</li>");
+        builder.append("<li>Input file: ").append(vis.getInputFile()).append("</li>");
+        builder.append("<li>Annotation file: ").append(vis.getAnnotFile()).append("</li>");
+        builder.append("</ul>\n");
+        return builder.toString();
+    }
 
-    public String toHTML(AutoMaxoRow item, int count, String hpoLabel, String maxoLabel) {
+
+    public String toHTML(CurrentItemVisualizable vis, int abstractCount) {
         StringBuilder builder = new StringBuilder();
         builder.append(HTML_HEADER);
+        builder.append(getIntroPara(vis));
+        AutoMaxoRow item = vis.getItem();
+        int count = abstractCount;
         List<PubMedCitation> citations = item.getCitationList();
         int N = citations.size();
         count = count % N;
         builder.append(para(item, count));
         PubMedCitation cite = citations.get(count);
-        builder.append(getMarkedUpText(cite.getAbstractText(), hpoLabel, maxoLabel));
+        builder.append(getMarkedUpText(cite.getAbstractText(), vis.getHpoString(), vis.getMaxoString()));
         builder.append(HTML_FOOT);
         return builder.toString();
     }
@@ -83,6 +98,15 @@ public class PmidAbstractTextVisualizer extends MaxoVisualizer  {
         builder.append(para(currentRow, count));
         PubMedCitation cite = citations.get(count);
         builder.append(cite.getAbstractText());
+        builder.append(HTML_FOOT);
+        return builder.toString();
+    }
+
+    public String getHtmlNoAbstract() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(HTML_HEADER);
+        builder.append("<h2>Error</h2>");
+        builder.append("<p>No row chosen. Open an automax file and choose a row</p>");
         builder.append(HTML_FOOT);
         return builder.toString();
     }

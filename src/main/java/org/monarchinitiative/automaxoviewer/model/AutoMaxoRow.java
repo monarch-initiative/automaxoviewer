@@ -242,4 +242,9 @@ public class AutoMaxoRow {
         }
     }
 
+    @Override
+    public String toString() {
+        return String.format("[AutoMaxoRow] %s - %s", getHpoLabel(), getMaxoLabel());
+    }
+
 }

@@ -49,7 +49,6 @@
                     <TableColumn fx:id="pmidCountCol" prefWidth="50.0" text="PMID(s)" />
                     <TableColumn fx:id="mondoLabelCol" prefWidth="400.0" text="Mondo" />
                 </columns>
-
             </TableView>
 
             <VBox prefHeight="600" prefWidth="1400" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="300.0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="350" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
@@ -57,12 +56,12 @@
                     <Insets topRightBottomLeft="20" />
                 </padding>
                 <HBox prefHeight="100.0" prefWidth="200.0">
-                    <Label text="Setup VBOX">
+                    <Button mnemonicParsing="false" onAction="#openAutoMAxO" text="Open AutoMAxO">
                         <HBox.margin>
                             <Insets bottom="10.0" left="10.0" right="10.0" top="20.0"/>
                         </HBox.margin>
-                    </Label>
-                    <Button mnemonicParsing="false" onAction="#openAutoMAxO" text="Open AutoMAxO">
+                    </Button>
+                    <Button mnemonicParsing="false" onAction="#openAnnotationFile" text="Open Annotation File">
                         <HBox.margin>
                             <Insets bottom="10.0" left="10.0" right="10.0" top="20.0"/>
                         </HBox.margin>
@@ -74,8 +73,8 @@
                     <Label>"Disease level?"</Label>
                     <CheckBox fx:id="diseaseLevelAnnotationCheckBox"/>
                 </HBox>
-                <HBox><Label>View new abstract</Label><Button fx:id="nextAbstractButton" onAction="#viewNextAbstract">Create annotation</Button></HBox>
-                <HBox><Label>Create Annotation</Label><Button fx:id="createAnnotButton" onAction="#createAnnot">Create annotation</Button></HBox>
+                <Button fx:id="nextAbstractButton" onAction="#viewNextAbstract">View next abstract</Button>
+                <Button fx:id="createAnnotButton" onAction="#createAnnot">Create annotation</Button>
             </VBox>
 
                 <WebView fx:id="currentAutoMaxoWebView" />

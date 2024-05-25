@@ -32,6 +32,9 @@ public class OntologyRosettaStone {
     }
 
     public Optional<Term> termFromPrimaryLabel(String label) {
+        if (label == null) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(labelToTermMap.get(label));
     }
 

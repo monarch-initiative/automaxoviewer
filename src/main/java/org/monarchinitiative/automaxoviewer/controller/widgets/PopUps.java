@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
@@ -248,5 +249,32 @@ public class PopUps {
         filechooser.setTitle("Set path to save HPO2ROBOT file");
         File f = filechooser.showSaveDialog(window);
         return Optional.ofNullable(f);
+    }
+
+
+    public static Optional<File> selectOrCreateInputFile(Window window) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("TSV Files", "*.tsv")
+        );
+        File selectedFile = fileChooser.showSaveDialog(window);
+        if (selectedFile != null) {
+            if (!selectedFile.exists()) {
+                try {
+                    boolean fileCreated = selectedFile.createNewFile();
+                    if (fileCreated) {
+                        return Optional.ofNullable(selectedFile);
+                    } else {
+                        return Optional.empty();
+                    }
+                } catch (IOException  e) {
+                    return Optional.empty();
+                }
+            }
+        } else {
+            PopUps.alertDialog("Error", "Could not select file(name) to save");
+        }
+        return Optional.empty();
     }
 }

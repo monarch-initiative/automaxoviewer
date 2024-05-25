@@ -60,7 +60,7 @@ public class OntologyTermAdderController implements Initializable {
 
     public void setInvalid() {
         ontologyTermErrorLabel.setTextFill(Color.RED);
-        ontologyTermErrorLabel.setText("Enter at least one parent term");
+        ontologyTermErrorLabel.setText("Use autocomplete to enter an ontology term");
         textField.setStyle("-fx-text-box-border: red; -fx-focus-color: red ;");
     }
 

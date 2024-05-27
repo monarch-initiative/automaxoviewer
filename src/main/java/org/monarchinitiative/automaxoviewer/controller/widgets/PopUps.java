@@ -252,11 +252,11 @@ public class PopUps {
     }
 
 
-    public static Optional<File> selectOrCreateInputFile(Window window) {
+    public static Optional<File> selectOrCreateInputFile(Window window, String extensionFile) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("TSV Files", "*.tsv")
+                new FileChooser.ExtensionFilter("TSV Files", extensionFile)
         );
         File selectedFile = fileChooser.showSaveDialog(window);
         if (selectedFile != null) {

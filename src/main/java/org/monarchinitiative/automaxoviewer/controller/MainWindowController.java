@@ -6,10 +6,15 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -19,6 +24,8 @@ import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Window;
+import org.monarchinitiative.automaxoviewer.controller.widgets.ImageTableCell;
+import org.monarchinitiative.automaxoviewer.controller.widgets.ImageTableCell;
 import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
 import org.monarchinitiative.automaxoviewer.json.AutomaxoJson;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
@@ -36,6 +43,8 @@ import org.monarchinitiative.phenol.ontology.data.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
@@ -68,6 +77,7 @@ public class MainWindowController extends BaseController implements Initializabl
     @FXML
     public OntologyTermAdder mondoTermAdder;
 
+
     @FXML
     private VBox statusBar;
     @FXML
@@ -76,6 +86,8 @@ public class MainWindowController extends BaseController implements Initializabl
 
     @FXML
     private TableView<AutoMaxoRow> automaxoTableView;
+    @FXML
+    public TableColumn<AutoMaxoRow, ItemStatus> imageStatusCol;
     @FXML
     private TableColumn<AutoMaxoRow, String> hpoLabelCol;
     @FXML
@@ -216,6 +228,10 @@ public class MainWindowController extends BaseController implements Initializabl
         setUpNewTermReadiness();
     }
 
+
+
+
+
     /**
      * choose one of the MAxO relations
      * Treats	the medical action can be used to treat the phenotypic feature indicated by the HPO term in persons with the indicated disease
@@ -335,8 +351,46 @@ public class MainWindowController extends BaseController implements Initializabl
     private void setUpTableView() {
         final String ANNOTATED_COLOR = "-fx-background-color: #baffba;";
         final String CANNOT_ANNOTATE_COLOR = "-fx-background-color: #ffd7d1;";
+        Image successImage = null;
+        Image failImage = null;
+        try {
+            failImage = new Image(getClass().getResourceAsStream("/img/fail.png"));
+            successImage = new Image(getClass().getResourceAsStream("/img/success.png"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("Error loading images: {}", e.getMessage());
+        }
 
         automaxoTableView.setPlaceholder(new Text("Open automaxo file to see items"));
+        imageStatusCol.setCellValueFactory(cd -> cd.getValue().getItemStatusProperty());
+        Image finalSuccessImage = successImage;
+        Image finalFailImage = failImage;
+        final ImageView imageView = new ImageView();
+        imageView.setFitHeight(25);
+        imageView.setFitWidth(25);
+        imageView.setPreserveRatio(true);
+        imageStatusCol.setCellFactory(column -> new TableCell<AutoMaxoRow, ItemStatus>() {
+            @Override
+            protected void updateItem(ItemStatus status, boolean empty) {
+                super.updateItem(status, empty);
+                if (empty || status == null) {
+                    setGraphic(null);
+                } else {
+                    switch (status) {
+                        case ItemStatus.ANNOTATED:
+                            imageView.setImage(finalSuccessImage);
+                            break;
+                        case ItemStatus.CANNOT_ANNOTATE:
+                            imageView.setImage(finalFailImage);
+                            break;
+                        default:
+                            imageView.setImage(null);
+                            break;
+                    }
+                    setGraphic(imageView);
+                }
+            }
+        });
 
         maxoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getMaxo_name()));
         maxoLabelCol.setCellFactory((column) -> {
@@ -416,7 +470,6 @@ public class MainWindowController extends BaseController implements Initializabl
     }
 
     private void showRowInDetail(AutoMaxoRow item) {
-        System.out.println("SHOW IN DETAI " + item);
         String label = item.getHpoLabel();
         if (label.length() < 5) {
             label = item.getNonGroundedHpo();
@@ -571,7 +624,13 @@ public class MainWindowController extends BaseController implements Initializabl
             Optional<String> opt = maxoOntology.get().version();
             maxo_json_version = opt.orElse("could not retrieve version");
         }
-        String msg = String.format("hp.json: %s, maxo.json: %s", hpo_json_version,maxo_json_version);
+        String mondo_json_version = "n/a";
+        if (mondoOntology != null) {
+            Optional<String> opt = mondoOntology.get().version();
+            maxo_json_version = opt.orElse("could not retrieve version");
+        }
+        String msg = String.format("hp.json: %s, maxo.json: %s, mondo.json: %s",
+                hpo_json_version,maxo_json_version, mondo_json_version);
         PopUps.alertDialog("Ontology versions", msg);
     }
 
@@ -653,9 +712,10 @@ public class MainWindowController extends BaseController implements Initializabl
     }
 
     @FXML
-    public void openAnnotationFile(ActionEvent actionEvent) {
+    public void openAnnotationFile(ActionEvent e) {
+        e.consume();
         Window stage = this.relationCB.getScene().getWindow();
-        Optional<File> opt = PopUps.selectOrCreateInputFile(stage);
+        Optional<File> opt = PopUps.selectOrCreateInputFile(stage, "*.ser");
         if (opt.isPresent()) {
             File annotFile = opt.get();
             model.setAnnotationFile(annotFile);

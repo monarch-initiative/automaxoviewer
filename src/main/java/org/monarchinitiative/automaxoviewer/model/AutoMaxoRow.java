@@ -1,6 +1,7 @@
 package org.monarchinitiative.automaxoviewer.model;
 
 
+import javafx.beans.property.ObjectProperty;
 import org.monarchinitiative.automaxoviewer.json.PotentialOntologyTerm;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
 public class AutoMaxoRow implements Serializable {
 
 
-    private ItemStatus itemStatus;
+    private final javafx.beans.property.ObjectProperty<ItemStatus> itemStatus;
 
     private String disease_id = null;
     private String disease_name = null;
@@ -96,7 +97,8 @@ public class AutoMaxoRow implements Serializable {
             this.citationList.add(new PubMedCitation(e.getKey(), e.getValue()));
         }
         // The following items are shown in the GUI and are mutable
-        itemStatus = ItemStatus.IN_PROGRESS;
+        itemStatus =  new javafx.beans.property.SimpleObjectProperty<>();
+        itemStatus.set(ItemStatus.IN_PROGRESS);
         this.disease_name = mondoDisplay();
         this.maxo_name = maxoDisplay();
         this.hpo_name = hpoDisplay();
@@ -234,11 +236,15 @@ public class AutoMaxoRow implements Serializable {
 
 
     public ItemStatus getItemStatus() {
+        return itemStatus.get();
+    }
+
+    public ObjectProperty<ItemStatus> getItemStatusProperty() {
         return itemStatus;
     }
 
     public void setItemStatus(ItemStatus itemStatus) {
-        this.itemStatus = itemStatus;
+        this.itemStatus.set(itemStatus);
     }
 
     public String getDisease_id() {

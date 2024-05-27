@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="WARN">
+    <!-- Console Appender -->
+    <appender name="Console" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} [%t] %-5p %c %x - %m%n" />
+        </layout>
+    </appender>
+
+    <!-- File Appender -->
+    <appender name="File" class="org.apache.log4j.RollingFileAppender">
+        <param name="file" value="logs/app.log" />
+        <param name="maxFileSize" value="5MB" />
+        <param name="maxBackupIndex" value="10" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} [%t] %-5p %c %x - %m%n" />
+        </layout>
+    </appender>
+
+
+    <logger name="org.monarchinitiative.phenol">
+        <level value="ERROR" />
+    </logger>
+
+    <!-- Root Logger -->
+    <root>
+        <priority value="debug" />
+        <appender-ref ref="Console" />
+        <appender-ref ref="File" />
+    </root>
+
+    <!-- Logger for specific package -->
+    <logger name="com.example">
+        <level value="info" />
+    </logger>
+</configuration>

@@ -16,7 +16,6 @@
                 <MenuItem fx:id="optionsMenuItem" mnemonicParsing="false" onAction="#optionsAction" text="Options" />
                 <MenuItem mnemonicParsing="false" onAction="#showVersionsAction" text="Show version" />
             </Menu>
-            <Menu fx:id="templatesMenu" mnemonicParsing="false" text="Templates" />
             <Menu mnemonicParsing="false" text="Help">
                 <MenuItem mnemonicParsing="false" text="About" />
             </Menu>
@@ -49,6 +48,11 @@
                         </HBox.margin>
                     </Button>
                     <Button mnemonicParsing="false" onAction="#openAnnotationFile" text="Open Annotation File">
+                        <HBox.margin>
+                            <Insets bottom="10.0" left="10.0" right="10.0" top="20.0"/>
+                        </HBox.margin>
+                    </Button>
+                    <Button mnemonicParsing="false" onAction="#saveAnnotationFile" text="Save Annotation File">
                         <HBox.margin>
                             <Insets bottom="10.0" left="10.0" right="10.0" top="20.0"/>
                         </HBox.margin>

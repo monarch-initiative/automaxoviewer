@@ -5,6 +5,7 @@ import javafx.beans.property.ObjectProperty;
 import org.monarchinitiative.automaxoviewer.json.PotentialOntologyTerm;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,6 +35,8 @@ import java.util.stream.Collectors;
  *
  */
 public class AutoMaxoRow implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
 
     private final javafx.beans.property.ObjectProperty<ItemStatus> itemStatus;

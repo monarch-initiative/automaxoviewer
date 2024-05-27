@@ -277,4 +277,12 @@ public class PopUps {
         }
         return Optional.empty();
     }
+
+    public static Optional<File> openInputFile(Window stage, String s) {
+        final FileChooser filechooser = new FileChooser();
+        filechooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        filechooser.setTitle("Open serialized annotation file");
+        File f = filechooser.showOpenDialog(stage);
+        return Optional.ofNullable(f);
+    }
 }

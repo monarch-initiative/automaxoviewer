@@ -1,7 +1,6 @@
 package org.monarchinitiative.automaxoviewer.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javafx.application.HostServices;
 import javafx.beans.property.*;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -24,6 +23,7 @@ import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
 import org.monarchinitiative.automaxoviewer.json.AutomaxoJson;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 import org.monarchinitiative.automaxoviewer.model.AutoMaxoRow;
+import org.monarchinitiative.automaxoviewer.model.ItemStatus;
 import org.monarchinitiative.automaxoviewer.model.Model;
 import org.monarchinitiative.automaxoviewer.view.CurrentItemVisualizable;
 import org.monarchinitiative.automaxoviewer.view.OntologyTermAdder;
@@ -73,7 +73,6 @@ public class MainWindowController extends BaseController implements Initializabl
     @FXML
     public Label statusBarLabel;
     private StringProperty statusBarTextProperty;
-    private Optional<HostServices> hostServicesOpt;
 
     @FXML
     private TableView<AutoMaxoRow> automaxoTableView;
@@ -92,7 +91,7 @@ public class MainWindowController extends BaseController implements Initializabl
     @FXML
     private OntologyTermAdder hpoTermAdder;
 
-   private Model model;
+   private final Model model;
 
     /** This gets set to true once the Ontology tree has finished initiatializing. Before that
      * we can check to make sure the user does not try to open a disease before the Ontology is
@@ -181,7 +180,7 @@ public class MainWindowController extends BaseController implements Initializabl
                 @Override
                 protected MinimalOntology call() {
                     MinimalOntology hpoOntology = OntologyLoader.loadOntology(mondoJsonFilePath);
-                    LOGGER.info("Loaded HPO, version {}", hpoOntology.version().orElse("n/a"));
+                    LOGGER.info("Loaded Mondo, version {}", hpoOntology.version().orElse("n/a"));
                     hpoTermAdder.setOntology(hpOntology.get());
                     return hpoOntology;
                 }
@@ -191,7 +190,7 @@ public class MainWindowController extends BaseController implements Initializabl
                 mondoTermAdder.setOntology(this.mondoOntology.get());
             });
             mondoLoadTask.setOnFailed(e -> {
-                LOGGER.warn("Could not load HPO from {}", mondoJsonFilePath.getAbsolutePath());
+                LOGGER.warn("Could not load Mondo from {}", mondoJsonFilePath.getAbsolutePath());
                 mondoOntology.set(null);
             });
             Thread thread = new Thread(mondoLoadTask);
@@ -205,7 +204,6 @@ public class MainWindowController extends BaseController implements Initializabl
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         LOGGER.trace("Initializing MainWindowController");
-        this.hostServicesOpt = this.viewFactory.getHostervicesOpt();
 
         //termLabelValidator.setFieldLabel("New Term Label");
         setUpStatusBar();
@@ -286,6 +284,7 @@ public class MainWindowController extends BaseController implements Initializabl
     private void clearFields() {
         hpoTermAdder.clearFields();
         maxoTermAdder.clearFields();
+        mondoTermAdder.clearFields();
         /*
         this.termLabelValidator.clearFields();
 
@@ -334,17 +333,53 @@ public class MainWindowController extends BaseController implements Initializabl
 
 
     private void setUpTableView() {
-        automaxoTableView.setPlaceholder(new Text("Open automaxo file to see items"));
-        // automaxoTableView.setEditable(false); ??
+        final String ANNOTATED_COLOR = "-fx-background-color: #baffba;";
+        final String CANNOT_ANNOTATE_COLOR = "-fx-background-color: #ffd7d1;";
 
-        maxoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().maxoDisplay()));
-        maxoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        automaxoTableView.setPlaceholder(new Text("Open automaxo file to see items"));
+
+        maxoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getMaxo_name()));
+        maxoLabelCol.setCellFactory((column) -> {
+            final TableCell<AutoMaxoRow, String> cell = new TableCell<>();
+            cell.itemProperty().addListener(// ChangeListener
+                    (obs, oldValue, newValue) -> {
+                        if (newValue != null) {
+                            final ContextMenu cellMenu = new ContextMenu();
+                            MenuItem ghMenuItem = new MenuItem("In progress");
+                            ghMenuItem.setOnAction(e -> {
+                                AutoMaxoRow item = cell.getTableRow().getItem();
+                                item.setItemStatus(ItemStatus.IN_PROGRESS);
+                                TableRow<AutoMaxoRow> currentRow = cell.getTableRow();
+                                currentRow.setStyle("");
+                            });
+                            MenuItem summaryMenuItem = new MenuItem("Completed");
+                            summaryMenuItem.setOnAction(e -> {
+                                AutoMaxoRow item = cell.getTableRow().getItem();
+                                item.setItemStatus(ItemStatus.ANNOTATED);
+                                TableRow<AutoMaxoRow> currentRow = cell.getTableRow();
+                                currentRow.setStyle(ANNOTATED_COLOR);
+                            });
+                            MenuItem markedFinishedMenuItem = new MenuItem("Cannot annotate");
+                            markedFinishedMenuItem.setOnAction(e -> {
+                                AutoMaxoRow item = cell.getTableRow().getItem();
+                                item.setItemStatus(ItemStatus.CANNOT_ANNOTATE);
+                                TableRow<AutoMaxoRow> currentRow = cell.getTableRow();
+                                currentRow.setStyle(CANNOT_ANNOTATE_COLOR);
+                            });
+                            cellMenu.getItems().addAll(ghMenuItem, summaryMenuItem, markedFinishedMenuItem);
+                            cell.setContextMenu(cellMenu);
+                        }
+                    }
+            );
+            cell.textProperty().bind(cell.itemProperty());
+            return cell;
+        });
         maxoLabelCol.setEditable(true);
         relationCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getRelationship()));
         relationCol.setCellFactory(TextFieldTableCell.forTableColumn());
         relationCol.setEditable(true);
 
-        hpoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().hpoDisplay()));
+        hpoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getHpo_name()));
         hpoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
         hpoLabelCol.setEditable(true);
 
@@ -353,7 +388,7 @@ public class MainWindowController extends BaseController implements Initializabl
         pmidCountCol.setEditable(false);
 
 
-        mondoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().mondoDisplay()));
+        mondoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getDisease_name()));
         mondoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
         mondoLabelCol.setEditable(true);
 
@@ -362,6 +397,22 @@ public class MainWindowController extends BaseController implements Initializabl
             showRowInDetail(item);
             model.setCurrentRow(item);
         });
+
+       /* automaxoTableView.setRowFactory(tv -> new TableRow<AutoMaxoRow>() {
+            @Override
+            protected void updateItem(AutoMaxoRow item, boolean empty) {
+                super.updateItem(item, empty);
+                ItemStatus itemStatus = item.getItemStatus();
+                if (itemStatus.equals(ItemStatus.IN_PROGRESS))
+                    setStyle("");
+                else if (itemStatus.equals(ItemStatus.ANNOTATED))
+                    setStyle(ANNOTATED_COLOR);
+                else if (itemStatus.equals(ItemStatus.CANNOT_ANNOTATE))
+                    setStyle(CANNOT_ANNOTATE_COLOR);
+                else
+                    setStyle("");
+            }
+        }); */
     }
 
     private void showRowInDetail(AutoMaxoRow item) {
@@ -429,14 +480,6 @@ public class MainWindowController extends BaseController implements Initializabl
         optionsMenuItem.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.META_DOWN));
     }
 
-    /**
-     * This gets called as the "hook" for the OntologyTree widget
-     * @param phenotypeTerm The term that is shown in the OntologyTree widget
-     */
-    private void addPhenotypeTerm(Term phenotypeTerm) {
-        LOGGER.trace("Adding parent term from ontology tree: {}", phenotypeTerm);
-       // parentTermAdder.setParentTerm(phenotypeTerm.getName());
-    }
 
 
     /**

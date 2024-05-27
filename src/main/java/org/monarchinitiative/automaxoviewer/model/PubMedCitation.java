@@ -3,9 +3,10 @@ package org.monarchinitiative.automaxoviewer.model;
 import org.monarchinitiative.automaxoviewer.json.PubMedSource;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class PubMedCitation {
+public class PubMedCitation implements Serializable {
 
     private final String title;
     private final String abstractText;

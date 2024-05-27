@@ -4,35 +4,73 @@ package org.monarchinitiative.automaxoviewer.model;
 import org.monarchinitiative.automaxoviewer.json.PotentialOntologyTerm;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.Serializable;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * An instance of this class represents one row in the table
+ * Note that we consider the table data (following import of JSON) to be the source of truth
+ * We keep the original data unchanged but have new data that will represent the output for the
+ * MAxO output annotation file:
+ * <ol>
+ *     <li>disease_id (MONDO)</li>
+ *      <li>disease_name</li>
+ *     <li>source_id (PMID)</li>
+ *     <li>maxo_id</li>
+ *      <li>maxo_name</li>
+ *     <li>hpo_id</li>
+ *     <li>relation (e.g., Treats)</li>
+ *      <li>evidence (e.g., PCS; TAS)</li>
+ *     <li>extension_id (e.g., CHEBI)</li>
+ *     <li>extension_name</li>
+ *      <li>comment</li>
+ *     <li>other</li>
+ *     <li>author</li>
+ *      <li>last_updated</li>
+ *     <li>created</li>
+ * </ol>
+ *
  */
-public class AutoMaxoRow {
+public class AutoMaxoRow implements Serializable {
 
 
-    private String maxoId;
-    private  String maxoLabel;
-    private  String nonGroundedMaxo;
-    private List<PotentialOntologyTerm> potentialMaxo;
-    private  String relationship;
-    private  String hpoId;
-    private  String hpoLabel;
-    private  String nonGroundedHpo;
-    private  List<PotentialOntologyTerm> potentialHpo;
-    private  String mondoId;
-    private  String mondoLabel;
-    private  String nonGroundedMondo;
-    private  List<PotentialOntologyTerm> potentialMondo;
-    private  String maxoQualifier;
-    private  String chebi;
-    private  String hpoExtension;
-    private int count;
-    private List<PubMedCitation> citationList;
+    private ItemStatus itemStatus;
+
+    private String disease_id = null;
+    private String disease_name = null;
+    private String source_id = null;
+    private String maxo_id = null;
+    private String maxo_name = null;
+    private String hpo_name = null;
+    private String hpo_id = null;
+    private String relation = null;
+    private String evidence = null;
+    private String extension_id = null;
+    private String extension_name = null;
+    /** If true, the medical action is for the entire disease rather than for a specific feature (HPO term). */
+    private boolean diseaseLevelAnnotation = false;
+    private Set<String> approvedPmidSet;
+
+
+    private final String maxoId;
+    private final String maxoLabel;
+    private final String nonGroundedMaxo;
+    private final List<PotentialOntologyTerm> potentialMaxo;
+    private final String relationship;
+    private final String hpoId;
+    private final String hpoLabel;
+    private final String nonGroundedHpo;
+    private final List<PotentialOntologyTerm> potentialHpo;
+    private final String mondoId;
+    private final String mondoLabel;
+    private final String nonGroundedMondo;
+    private final List<PotentialOntologyTerm> potentialMondo;
+    private final String maxoQualifier;
+    private final String chebi;
+    private final String hpoExtension;
+    private final int count;
+    private final List<PubMedCitation> citationList;
 
 
     public AutoMaxoRow(TripletItem item) {
@@ -53,154 +91,101 @@ public class AutoMaxoRow {
        this.chebi = item.getTriplet().getChebi();
        this.hpoExtension = item.getTriplet().getHpo_extension();
        this.count = item.getCount();
-        citationList = new ArrayList<>();
+       this.citationList = new ArrayList<>();
         for (var e : item.getSource().entrySet()) {
-            citationList.add(new PubMedCitation(e.getKey(), e.getValue()));
+            this.citationList.add(new PubMedCitation(e.getKey(), e.getValue()));
         }
+        // The following items are shown in the GUI and are mutable
+        itemStatus = ItemStatus.IN_PROGRESS;
+        this.disease_name = mondoDisplay();
+        this.maxo_name = maxoDisplay();
+        this.hpo_name = hpoDisplay();
+        this.approvedPmidSet = new HashSet<>();
     }
 
     public String getMaxoId() {
         return maxoId;
     }
 
-    public void setMaxoId(String maxoId) {
-        this.maxoId = maxoId;
-    }
 
     public String getMaxoLabel() {
         return maxoLabel;
     }
 
-    public void setMaxoLabel(String maxoLabel) {
-        this.maxoLabel = maxoLabel;
-    }
 
     public String getNonGroundedMaxo() {
         return nonGroundedMaxo;
     }
 
-    public void setNonGroundedMaxo(String nonGroundedMaxo) {
-        this.nonGroundedMaxo = nonGroundedMaxo;
-    }
 
     public List<PotentialOntologyTerm> getPotentialMaxo() {
         return potentialMaxo;
     }
 
-    public void setPotentialMaxo(List<PotentialOntologyTerm> potentialMaxo) {
-        this.potentialMaxo = potentialMaxo;
-    }
 
     public String getRelationship() {
         return relationship;
     }
 
-    public void setRelationship(String relationship) {
-        this.relationship = relationship;
-    }
 
     public String getHpoId() {
         return hpoId;
-    }
-
-    public void setHpoId(String hpoId) {
-        this.hpoId = hpoId;
     }
 
     public String getHpoLabel() {
         return hpoLabel;
     }
 
-    public void setHpoLabel(String hpoLabel) {
-        this.hpoLabel = hpoLabel;
-    }
 
     public String getNonGroundedHpo() {
         return nonGroundedHpo;
     }
 
-    public void setNonGroundedHpo(String nonGroundedHpo) {
-        this.nonGroundedHpo = nonGroundedHpo;
-    }
 
     public List<PotentialOntologyTerm> getPotentialHpo() {
         return potentialHpo;
     }
 
-    public void setPotentialHpo(List<PotentialOntologyTerm> potentialHpo) {
-        this.potentialHpo = potentialHpo;
-    }
 
     public String getMondoId() {
         return mondoId;
-    }
-
-    public void setMondoId(String mondoId) {
-        this.mondoId = mondoId;
     }
 
     public String getMondoLabel() {
         return mondoLabel;
     }
 
-    public void setMondoLabel(String mondoLabel) {
-        this.mondoLabel = mondoLabel;
-    }
-
     public String getNonGroundedMondo() {
         return nonGroundedMondo;
     }
 
-    public void setNonGroundedMondo(String nonGroundedMondo) {
-        this.nonGroundedMondo = nonGroundedMondo;
-    }
 
     public List<PotentialOntologyTerm> getPotentialMondo() {
         return potentialMondo;
-    }
-
-    public void setPotentialMondo(List<PotentialOntologyTerm> potentialMondo) {
-        this.potentialMondo = potentialMondo;
     }
 
     public String getMaxoQualifier() {
         return maxoQualifier;
     }
 
-    public void setMaxoQualifier(String maxoQualifier) {
-        this.maxoQualifier = maxoQualifier;
-    }
 
     public String getChebi() {
         return chebi;
     }
 
-    public void setChebi(String chebi) {
-        this.chebi = chebi;
-    }
 
     public String getHpoExtension() {
         return hpoExtension;
     }
 
-    public void setHpoExtension(String hpoExtension) {
-        this.hpoExtension = hpoExtension;
-    }
 
     public int getCount() {
         return count;
     }
 
-    public void setCount(int count) {
-        this.count = count;
-    }
 
     public List<PubMedCitation> getCitationList() {
         return citationList;
-    }
-
-    public void setCitationList(List<PubMedCitation> citationList) {
-        this.citationList = citationList;
     }
 
     public String maxoDisplay() {
@@ -246,5 +231,115 @@ public class AutoMaxoRow {
     public String toString() {
         return String.format("[AutoMaxoRow] %s - %s", getHpoLabel(), getMaxoLabel());
     }
+
+
+    public ItemStatus getItemStatus() {
+        return itemStatus;
+    }
+
+    public void setItemStatus(ItemStatus itemStatus) {
+        this.itemStatus = itemStatus;
+    }
+
+    public String getDisease_id() {
+        return disease_id;
+    }
+
+    public void setDisease_id(String disease_id) {
+        this.disease_id = disease_id;
+    }
+
+    public String getDisease_name() {
+        return disease_name;
+    }
+
+    public void setDisease_name(String disease_name) {
+        this.disease_name = disease_name;
+    }
+
+    public String getSource_id() {
+        return source_id;
+    }
+
+    public void setSource_id(String source_id) {
+        this.source_id = source_id;
+    }
+
+    public String getMaxo_id() {
+        return maxo_id;
+    }
+
+    public void setMaxo_id(String maxo_id) {
+        this.maxo_id = maxo_id;
+    }
+
+    public String getMaxo_name() {
+        return maxo_name;
+    }
+
+    public void setMaxo_name(String maxo_name) {
+        this.maxo_name = maxo_name;
+    }
+
+    public String getHpo_name() {
+        return hpo_name;
+    }
+
+    public void setHpo_name(String hpo_name) {
+        this.hpo_name = hpo_name;
+    }
+
+    public String getHpo_id() {
+        return hpo_id;
+    }
+
+    public void setHpo_id(String hpo_id) {
+        this.hpo_id = hpo_id;
+    }
+
+    public String getRelation() {
+        return relation;
+    }
+
+    public void setRelation(String relation) {
+        this.relation = relation;
+    }
+
+    public String getEvidence() {
+        return evidence;
+    }
+
+    public void setEvidence(String evidence) {
+        this.evidence = evidence;
+    }
+
+    public String getExtension_id() {
+        return extension_id;
+    }
+
+    public void setExtension_id(String extension_id) {
+        this.extension_id = extension_id;
+    }
+
+    public String getExtension_name() {
+        return extension_name;
+    }
+
+    public void setExtension_name(String extension_name) {
+        this.extension_name = extension_name;
+    }
+
+    public boolean isDiseaseLevelAnnotation() {
+        return diseaseLevelAnnotation;
+    }
+
+    public void setDiseaseLevelAnnotation(boolean diseaseLevelAnnotation) {
+        this.diseaseLevelAnnotation = diseaseLevelAnnotation;
+    }
+
+    public Set<String> getApprovedPmidSet() {
+        return approvedPmidSet;
+    }
+
 
 }

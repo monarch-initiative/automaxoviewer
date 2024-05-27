@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
-public class PotentialOntologyTerm {
+import java.io.Serializable;
+
+public class PotentialOntologyTerm implements Serializable {
 
     private String id;
     private String label;

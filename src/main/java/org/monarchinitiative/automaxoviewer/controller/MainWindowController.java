@@ -6,7 +6,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -194,6 +193,7 @@ public class MainWindowController extends BaseController implements Initializabl
     }
 
     private void loadMondo(File mondoJsonFilePath) {
+        LOGGER.info("Loading mondo from {}.", mondoJsonFilePath.getAbsolutePath());
         if (mondoJsonFilePath != null && mondoJsonFilePath.isFile()) {
             Task<MinimalOntology> mondoLoadTask = new Task<>() {
                 @Override
@@ -231,8 +231,6 @@ public class MainWindowController extends BaseController implements Initializabl
         loadOntologies();
         setUpTableView();
         setUpChoiceBox();
-        setupRobotItemHandlers();
-        setUpNewTermReadiness();
     }
 
 
@@ -268,6 +266,7 @@ public class MainWindowController extends BaseController implements Initializabl
         viewFactory.getOptions().mondoJsonFileProperty().addListener((obs, old, mondoJsonFilePath) -> loadMondo(mondoJsonFilePath));
         loadHpo(viewFactory.getOptions().getHpJsonFile());
         loadMaxo(viewFactory.getOptions().getMaxoJsonFile());
+        loadMondo(viewFactory.getOptions().getMondoJsonFile());
         this.model.setOptions(viewFactory.getOptions());
         // set the labels
         hpoTermAdder.setLabel("HPO");
@@ -275,24 +274,7 @@ public class MainWindowController extends BaseController implements Initializabl
         mondoTermAdder.setLabel("Mondo");
     }
 
-    /**
-     * We are ready to enter a new maxo curation item if we have a valid label, at least one parent term
-     * and a valid definition. Here, we bind the new ROBOT item button to the
-     * three corresponding Boolean properties.
-     */
-    private void setUpNewTermReadiness() {
-        /*
-         BooleanBinding readyBinding = hpoTermAdder.parentTermsReady()
-                .and(termLabelValidator.getIsValidProperty())
-                .and(definitionPane.isReadyProperty());
-        this.robotIssueIsReadyProperty.bind(readyBinding);
-        this.addNewHpoTermBox.bindNewRobotItemButton(robotIssueIsReadyProperty);
-        IntegerBinding robotTableSizeBinding = Bindings.size(robotTableView.getItems());
-        BooleanProperty tableReadyProperty = new SimpleBooleanProperty();
-        tableReadyProperty.bind(robotTableSizeBinding.greaterThan(0));
-        this.addNewHpoTermBox.bindWriteRobotFileButton(tableReadyProperty);
-        */
-    }
+
 
 
     private void clearFields() {
@@ -301,41 +283,7 @@ public class MainWindowController extends BaseController implements Initializabl
         /* Don't clear Mondo -- we want to leave the correct disease */
     }
 
-    /**
-     * This method uses to the data entered by the user to add another ROBOT item to the table
-     */
-    private void createNewRobotItem() {
-       /*
-        String newHpoLabel = termLabelValidator.getLabel().get();
-        var hpo = hpOntology.get();
-        boolean duplicated = hpo.getTerms().stream()
-                .map(Term::getName)
-                .anyMatch(t -> t.equals(newHpoLabel));
-        if (duplicated) {
-            PopUps.alertDialog("Error",
-                    String.format("%s already present in ontology.", newHpoLabel));
-            return;
-        }
-        model.setHpoTermLabel(newHpoLabel);
-        model.setDefinition(this.definitionPane.getDefinition());
-        model.setparentTerms(parentTermAdder.getParentTermList());
-        model.setComment(this.definitionPane.getComment());
-        model.setPmidList(pmidXrefAdderBox.getPmidList());
-        model.setSynonymList(pmidXrefAdderBox.getSynonymList());
-        Optional<String> opt = gitHubIssueBox.getGitHubIssueNumber();
-        opt.ifPresent(model::setGitHubIssue);
-        Optional<String> customOrcidOpt = pmidXrefAdderBox.getCustomOrcidOpt();
-        customOrcidOpt.ifPresent(model::setOrcid);
-        Optional<RobotItem> itemOpt = model.getRobotItemOpt();
-        if (itemOpt.isPresent()) {
-            model.reset();
-            robotTableView.getItems().add(itemOpt.get());
-        } else {
-            PopUps.alertDialog("Error", "Could not create ROBOT Item");
-        }
-*/
 
-    }
 
 
     private void setUpTableView() {
@@ -382,7 +330,7 @@ public class MainWindowController extends BaseController implements Initializabl
             }
         });
 
-        maxoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getMaxoLabel()));
+        maxoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().maxoDisplay()));
         maxoLabelCol.setCellFactory((column) -> {
             final TableCell<AutoMaxoRow, String> cell = new TableCell<>();
             cell.itemProperty().addListener(// ChangeListener
@@ -423,7 +371,7 @@ public class MainWindowController extends BaseController implements Initializabl
         relationCol.setCellFactory(TextFieldTableCell.forTableColumn());
         relationCol.setEditable(true);
 
-        hpoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getHpoLabel()));
+        hpoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().hpoDisplay()));
         hpoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
         hpoLabelCol.setEditable(true);
 
@@ -432,7 +380,7 @@ public class MainWindowController extends BaseController implements Initializabl
         pmidCountCol.setEditable(false);
 
 
-        mondoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getMondoLabel()));
+        mondoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().mondoDisplay()));
         mondoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
         mondoLabelCol.setEditable(true);
 
@@ -442,30 +390,15 @@ public class MainWindowController extends BaseController implements Initializabl
             model.setCurrentRow(item);
         });
 
-       /* automaxoTableView.setRowFactory(tv -> new TableRow<AutoMaxoRow>() {
-            @Override
-            protected void updateItem(AutoMaxoRow item, boolean empty) {
-                super.updateItem(item, empty);
-                ItemStatus itemStatus = item.getItemStatus();
-                if (itemStatus.equals(ItemStatus.IN_PROGRESS))
-                    setStyle("");
-                else if (itemStatus.equals(ItemStatus.ANNOTATED))
-                    setStyle(ANNOTATED_COLOR);
-                else if (itemStatus.equals(ItemStatus.CANNOT_ANNOTATE))
-                    setStyle(CANNOT_ANNOTATE_COLOR);
-                else
-                    setStyle("");
-            }
-        }); */
     }
 
     private void showRowInDetail(AutoMaxoRow item) {
-        String label = item.getHpoLabel();
+        String label = item.getCandidateHpoLabel();
         if (label.length() < 5) {
             label = item.getNonGroundedHpo();
         }
         this.hpoTermAdder.setOntologyLabelCandidate(label);
-        label = item.getMaxoLabel();
+        label = item.getCandidateMaxoLabel();
         if (label.length() < 5) {
             label = item.getNonGroundedMaxo();
         }
@@ -535,70 +468,6 @@ public class MainWindowController extends BaseController implements Initializabl
 
 
     /**
-     * Set up handlers for the three buttons on the new ROBOT item box
-     */
-    private void setupRobotItemHandlers() {
-        EventHandler<ActionEvent> handler = actionEvent -> {
-            createNewRobotItem();
-            clearFields();
-        };
-        /*
-        this.addNewHpoTermBox.setCreateNewRobotItemAction(handler);
-        EventHandler<ActionEvent> clearHandler = actionEvent -> {
-            Stage stage = (Stage) this.addNewHpoTermBox.getScene().getWindow();
-            boolean OK = BooleanRetrieverWidget.getBooleanFromUser("Are you sure you want to clear the ROBOT item table?",
-                    "Choose OK to permanently delete the data in the ROBOT item table",
-                    "Warning",
-                    stage);
-            if (OK) {
-                this.robotTableView.getItems().clear();
-            }
-        };
-        this.addNewHpoTermBox.setClearRobotAction(clearHandler);
-        EventHandler<ActionEvent> exportHandler = actionEvent -> {
-            Optional<File> opt = this.model.getRobotSaveFileOpt();
-            if (opt.isPresent()) {
-                RobotItem.exportRobotItems(robotTableView.getItems(), opt.get());
-            } else {
-                PopUps.showInfoMessage("Error", "Could not set ROBOT export file");
-
-            }
-        };
-        this.addNewHpoTermBox.setExportRobotAction(exportHandler);
-        EventHandler<ActionEvent> clearRobotFileHandler = actionEvent -> {
-            Optional<File> opt = model.getHpoSrcDir();
-            if (opt.isPresent()) {
-                File hpoSrcDir = opt.get();
-                RobotRunner runner = new RobotRunner(hpoSrcDir);
-                runner.clearRobotFile();
-            } else {
-                PopUps.showInfoMessage("Error", "Could not set ROBOT export file");
-            }
-        };
-        this.addNewHpoTermBox.setClearRobotFileHandler(clearRobotFileHandler);
-        EventHandler<ActionEvent> copyRobotCommandHandler = actionEvent -> {
-            Optional<File> opt = model.getHpoSrcDir();
-            if (opt.isPresent()) {
-                File hpoSrcDir = opt.get();
-                RobotRunner runner = new RobotRunner(hpoSrcDir);
-                String command = runner.getCommandString();
-                final Clipboard clipboard = Clipboard.getSystemClipboard();
-                final ClipboardContent content = new ClipboardContent();
-                content.putString(command);
-                clipboard.setContent(content);
-                LOGGER.trace(command);
-            } else {
-                PopUps.showInfoMessage("Error", "Could not get ROBOT command");
-                LOGGER.error("Could not get ROBOT command");
-            }
-        };
-        this.addNewHpoTermBox.copyRobotCommandAction(copyRobotCommandHandler);
-
-         */
-    }
-
-
-    /**
      * Open a window and show the versions of HPO and MAxO
      */
     @FXML
@@ -648,45 +517,17 @@ public class MainWindowController extends BaseController implements Initializabl
     private void populateTable() {
         List<TripletItem> tilist = model.getTripletItemList();
         List<AutoMaxoRow> rowList = tilist.stream().map(AutoMaxoRow::new).toList();
+        ObservableList<AutoMaxoRow> items = FXCollections.observableArrayList(rowList);
         javafx.application.Platform.runLater(() -> {
             LOGGER.trace("populateTable: got a total of {} Automaxo items", rowList.size());
             automaxoTableView.getItems().clear(); /* clear previous rows, if any */
-            automaxoTableView.getItems().addAll(rowList);
+            automaxoTableView.getItems().addAll(items);
             automaxoTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         });
     }
 
 
-    public void createAnnot(ActionEvent actionEvent) {
-        System.out.println("create annotation");
-        AutoMaxoRow currentRow = model.getCurrentRow();
-        Term mondoTerm = this.mondoTerm;
-        Optional<Term> hpoTermOpt = this.hpoTermAdder.getTermIfValid();
-        Optional<Term> maxoTermOpt = this.maxoTermAdder.getTermIfValid();
-        Optional<Term> monodTermOpt = this.mondoTermAdder.getTermIfValid();
-        if (monodTermOpt.isEmpty()) {
-            PopUps.alertDialog("Error", "Cannot add annotation unless MONDO term is valid (green border)");
-            return;
-        }
-        if (hpoTermOpt.isEmpty()) {
-            PopUps.alertDialog("Error", "Cannot add annotation unless HPO term is valid (green border)");
-            return;
-        }
-        if (maxoTermOpt.isEmpty()) {
-            PopUps.alertDialog("Error", "Cannot add annotation unless Maxo term is valid (green border)");
-            return;
-        }
-        MaxoRelation relation = this.relationCB.getValue();
 
-        this.mondoTerm = monodTermOpt.get();
-        Term hpoTerm = hpoTermOpt.get();
-        Term maxoTerm = maxoTermOpt.get();
-        currentRow.setItemStatus(ItemStatus.ANNOTATED);
-        currentRow.setMaxo(maxoTerm);
-        currentRow.setHpo(hpoTerm);
-        currentRow.setDiseaseTerm(mondoTerm);
-        currentRow.setMaxoRelation(relation);
-    }
 
     public void viewNextAbstract(ActionEvent actionEvent) {
         viewCurrentItem(model);
@@ -783,22 +624,59 @@ public class MainWindowController extends BaseController implements Initializabl
         }
     }
 
+
+    public void createAnnot(ActionEvent e) {
+        e.consume();
+        System.out.println("create annotation");
+       // AutoMaxoRow currentRow = model.getCurrentRow();
+        AutoMaxoRow currentRow = automaxoTableView.getSelectionModel().getSelectedItems().getFirst();
+        Term mondoTerm = this.mondoTerm;
+        Optional<Term> hpoTermOpt = this.hpoTermAdder.getTermIfValid();
+        Optional<Term> maxoTermOpt = this.maxoTermAdder.getTermIfValid();
+        Optional<Term> monodTermOpt = this.mondoTermAdder.getTermIfValid();
+        if (monodTermOpt.isEmpty()) {
+            PopUps.alertDialog("Error", "Cannot add annotation unless MONDO term is valid (green border)");
+            return;
+        }
+        if (hpoTermOpt.isEmpty()) {
+            PopUps.alertDialog("Error", "Cannot add annotation unless HPO term is valid (green border)");
+            return;
+        }
+        if (maxoTermOpt.isEmpty()) {
+            PopUps.alertDialog("Error", "Cannot add annotation unless Maxo term is valid (green border)");
+            return;
+        }
+        MaxoRelation relation = this.relationCB.getValue();
+
+        this.mondoTerm = monodTermOpt.get();
+        Term hpoTerm = hpoTermOpt.get();
+        Term maxoTerm = maxoTermOpt.get();
+        currentRow.setItemStatus(ItemStatus.ANNOTATED);
+        currentRow.setMaxo(maxoTerm);
+        currentRow.setHpo(hpoTerm);
+        currentRow.setDiseaseTerm(mondoTerm);
+        currentRow.setMaxoRelation(relation);
+        automaxoTableView.refresh();
+        long count = automaxoTableView.getItems().stream().filter(AutoMaxoRow::isAnnotated).count();
+        LOGGER.info("Current row status {}", currentRow.getItemStatus());
+        LOGGER.info("Total annotated items {}", count);
+    }
+
+    @FXML
     public void exportAnnotationFile(ActionEvent actionEvent) {
+        LOGGER.info("Exporting POET annotation file");
         List<AutoMaxoRow> autoMaxoRowList = this.automaxoTableView.getItems();
         List<String> outputrows = new ArrayList<>();
-        String orcid = "TOTOS";
+        String orcid = model.getOrcid().orElse("n/a");
         for (var amrow : autoMaxoRowList) {
+            System.out.println(amrow.maxoDisplay());
             if (amrow.getItemStatus().equals(ItemStatus.ANNOTATED)) {
                 outputrows.addAll(amrow.getPoetRows(orcid));
             }
         }
         Optional<Window> opt =   Stage.getWindows().stream().filter(Window::isShowing).findAny();
         Stage stage;
-        if (opt.isPresent()) {
-            stage = (Stage) opt.get();
-        } else {
-            stage = null;
-        }
+        stage = (Stage) opt.orElse(null);
         String home = System.getProperty("user.home");
         // Stage ownerWindow, File initialDirectory, String title, String initialFileName
         File f = PopUps.selectFileToSave(stage, new File(home), "Save maxo annotations", "maxo_DISEASE.tsv");

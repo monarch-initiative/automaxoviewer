@@ -29,7 +29,7 @@ public class OntologyTermAdder extends HBox {
 
    private OntologyRosettaStone rosettaStone = null;
 
-    private final BooleanProperty parentTermReadyProperty = new SimpleBooleanProperty(false);
+   private final BooleanProperty parentTermReadyProperty = new SimpleBooleanProperty(false);
 
 
 
@@ -69,13 +69,19 @@ public class OntologyTermAdder extends HBox {
             LOGGER.info("Adding ontology to OntologyTermAdder {}", ontology.version().orElse("n/a"));
         }
         rosettaStone = new OntologyRosettaStone(ontology);
+        controller.setRosettaStone(rosettaStone);
         TextFields.bindAutoCompletion(controller.getTextField(), rosettaStone.allLabels());
     }
 
 
     public Optional<Term> getTermIfValid() {
         String label = controller.getOntologyTerm();
+        if (rosettaStone == null) {
+            return Optional.empty();
+        }
         Optional<Term> opt = rosettaStone.termFromPrimaryLabel(label);
+        if (opt.isPresent()) controller.setValid(opt.get().getName());
+        else controller.setInvalid();
         return opt;
     }
 
@@ -99,6 +105,11 @@ public class OntologyTermAdder extends HBox {
     }
 
     public void setOntologyLabelCandidate(String label) {
-        this.controller.setOntologyLabelCandidate(label);
+        Optional<Term> opt = this.rosettaStone.termFromPrimaryLabel(label);
+        if (opt.isPresent()) {
+            this.controller.setValidOntologyLabel(label);
+        } else {
+            this.controller.setInValidOntologyLabel(label);
+        }
     }
 }

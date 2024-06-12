@@ -1,10 +1,14 @@
 package org.monarchinitiative.automaxoviewer.model;
 
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import org.monarchinitiative.automaxoviewer.json.PotentialOntologyTerm;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 import org.monarchinitiative.phenol.ontology.data.Term;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -38,35 +42,39 @@ import java.util.stream.Collectors;
 public class AutoMaxoRow implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
+    /** This term is used for disease-level annotations */
+    private final static Term PHENOTYPIC_ABNORMALITY = Term.of(TermId.of("HP:0000118"), "Phenotypic abnormality");
 
 
-    private final javafx.beans.property.ObjectProperty<ItemStatus> itemStatus;
-    private Term mondoTerm = null;
-    private Term maxoTerm = null;
-    private Term hpoTerm = null;
+    private final ObjectProperty<ItemStatus> itemStatus;
+    private final ObjectProperty<Term> mondoProperty;
+    private final ObjectProperty<Term> maxoProperty;
+    private final ObjectProperty<Term> hpoProperty;
+    private final ObjectProperty<MaxoRelation> maxoRelationProperty;
+    private final BooleanProperty diseaseLevelProperty;
+
 
     private String source_id = null;
 
-    private MaxoRelation maxoRelation = MaxoRelation.UNKNOWN;
+
     private String evidence = null;
     private String extension_id = null;
     private String extension_name = null;
     /** If true, the medical action is for the entire disease rather than for a specific feature (HPO term). */
-    private boolean diseaseLevelAnnotation = false;
     private final Set<String> approvedPmidSet;
 
 
     private final String maxoId;
-    private final String maxoLabel;
+    private final String candidateMaxoLabel;
     private final String nonGroundedMaxo;
     private final List<PotentialOntologyTerm> potentialMaxo;
     private final String relationship;
     private final String hpoId;
-    private final String hpoLabel;
+    private final String candidateHpoLabel;
     private final String nonGroundedHpo;
     private final List<PotentialOntologyTerm> potentialHpo;
     private final String mondoId;
-    private final String mondoLabel;
+    private final String candidateMondoLabel;
     private final String nonGroundedMondo;
     private final List<PotentialOntologyTerm> potentialMondo;
     private final String maxoQualifier;
@@ -78,16 +86,16 @@ public class AutoMaxoRow implements Serializable {
 
     public AutoMaxoRow(TripletItem item) {
        this.maxoId = item.getTriplet().getMaxo().toUpperCase();
-       this.maxoLabel = item.getTriplet().getMaxo_label();
+       this.candidateMaxoLabel = item.getTriplet().getMaxo_label();
        this.nonGroundedMaxo = item.getTriplet().getNon_grounded_maxo();
        this.potentialMaxo = Arrays.stream(item.getTriplet().getPotential_maxo()).toList();
        this.relationship = item.getTriplet().getRelationship();
        this.hpoId = item.getTriplet().getHpo().toUpperCase();
-       this.hpoLabel = item.getTriplet().getHpo_label();
+       this.candidateHpoLabel = item.getTriplet().getHpo_label();
        this.nonGroundedHpo = item.getTriplet().getNon_grounded_hpo();
        this.potentialHpo = Arrays.stream(item.getTriplet().getPotential_hpo()).toList();
        this.mondoId = item.getTriplet().getMondo().toUpperCase();
-       this.mondoLabel = item.getTriplet().getMondo_label();
+       this.candidateMondoLabel = item.getTriplet().getMondo_label();
        this.nonGroundedMondo = item.getTriplet().getNon_grounded_mondo();
        this.potentialMondo = Arrays.asList(item.getTriplet().getPotential_mondo());
        this.maxoQualifier = item.getTriplet().getMaxo_qualifier();
@@ -102,6 +110,13 @@ public class AutoMaxoRow implements Serializable {
         itemStatus =  new javafx.beans.property.SimpleObjectProperty<>();
         itemStatus.set(ItemStatus.IN_PROGRESS);
         this.approvedPmidSet = new HashSet<>();
+
+        mondoProperty = new SimpleObjectProperty<>();
+        maxoProperty = new SimpleObjectProperty<>();
+        hpoProperty = new SimpleObjectProperty<>();
+        maxoRelationProperty = new SimpleObjectProperty<>();
+        maxoRelationProperty.set(MaxoRelation.UNKNOWN);
+        diseaseLevelProperty = new SimpleBooleanProperty(false);
     }
 
     public String getMaxoId() {
@@ -109,8 +124,8 @@ public class AutoMaxoRow implements Serializable {
     }
 
 
-    public String getMaxoLabel() {
-        return maxoLabel;
+    public String getCandidateMaxoLabel() {
+        return candidateMaxoLabel;
     }
 
 
@@ -133,8 +148,8 @@ public class AutoMaxoRow implements Serializable {
         return hpoId;
     }
 
-    public String getHpoLabel() {
-        return hpoLabel;
+    public String getCandidateHpoLabel() {
+        return candidateHpoLabel;
     }
 
 
@@ -152,8 +167,8 @@ public class AutoMaxoRow implements Serializable {
         return mondoId;
     }
 
-    public String getMondoLabel() {
-        return mondoLabel;
+    public String getCandidateMondoLabel() {
+        return candidateMondoLabel;
     }
 
     public String getNonGroundedMondo() {
@@ -190,8 +205,8 @@ public class AutoMaxoRow implements Serializable {
     }
 
     public String maxoDisplay() {
-        if (! maxoId.isEmpty() && ! maxoLabel.isEmpty()) {
-            return String.format("%s (%s)", maxoLabel, maxoId);
+        if (! maxoId.isEmpty() && ! candidateMaxoLabel.isEmpty()) {
+            return String.format("%s (%s)", candidateMaxoLabel, maxoId);
         } else if (! nonGroundedMaxo.isEmpty()) {
             return String.format("Non-grounded: %s", nonGroundedMaxo);
         } else if (! potentialMaxo.isEmpty()) {
@@ -203,8 +218,8 @@ public class AutoMaxoRow implements Serializable {
     }
 
     public String hpoDisplay() {
-        if (! hpoId.isEmpty() && ! hpoLabel.isEmpty()) {
-            return String.format("%s (%s)", hpoLabel, hpoId);
+        if (! hpoId.isEmpty() && ! candidateHpoLabel.isEmpty()) {
+            return String.format("%s (%s)", candidateHpoLabel, hpoId);
         } else if (! nonGroundedHpo.isEmpty()) {
             return String.format("Non-grounded: %s", nonGroundedHpo);
         } else if (! potentialHpo.isEmpty()) {
@@ -216,8 +231,8 @@ public class AutoMaxoRow implements Serializable {
     }
 
     public String mondoDisplay() {
-        if (! mondoId.isEmpty() && ! mondoLabel.isEmpty()) {
-            return String.format("%s (%s)", mondoLabel, mondoId);
+        if (! mondoId.isEmpty() && ! candidateMondoLabel.isEmpty()) {
+            return String.format("%s (%s)", candidateMondoLabel, mondoId);
         } else if (! nonGroundedMondo.isEmpty()) {
             return String.format("Non-grounded: %s", nonGroundedMondo);
         } else if (! potentialMondo.isEmpty()) {
@@ -230,7 +245,7 @@ public class AutoMaxoRow implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("[AutoMaxoRow] %s - %s", getHpoLabel(), getMaxoLabel());
+        return String.format("[AutoMaxoRow] %s - %s", getCandidateHpoLabel(), getCandidateMaxoLabel());
     }
 
 
@@ -246,25 +261,29 @@ public class AutoMaxoRow implements Serializable {
         this.itemStatus.set(itemStatus);
     }
 
+    public boolean isAnnotated() {
+        return this.itemStatus.equals(ItemStatus.ANNOTATED);
+    }
+
     public Optional<Term> mondoTerm() {
-        return Optional.ofNullable(mondoTerm);
+        return Optional.ofNullable(this.mondoProperty.get());
     }
     public void setDiseaseTerm(Term term) {
-        this.mondoTerm = term;
+        this.mondoProperty.set(term);
     }
 
     public Optional<Term> maxoTerm() {
-        return Optional.ofNullable(maxoTerm);
+        return Optional.ofNullable(this.maxoProperty.get());
     }
     public void setMaxo(Term term) {
-        this.maxoTerm = term;
+        this.maxoProperty.set(term);
     }
 
     public Optional<Term> hpoTerm() {
-        return Optional.ofNullable(hpoTerm);
+        return Optional.ofNullable(this.hpoProperty.get());
     }
     public void setHpo(Term term) {
-        this.hpoTerm = term;
+        this.hpoProperty.set(term);
     }
 
     public String getSource_id() {
@@ -277,11 +296,11 @@ public class AutoMaxoRow implements Serializable {
 
 
     public MaxoRelation getMaxoRelation() {
-        return maxoRelation;
+        return maxoRelationProperty.get();
     }
 
     public void setMaxoRelation(MaxoRelation maxoRelation) {
-        this.maxoRelation = maxoRelation;
+        this.maxoRelationProperty.set(maxoRelation);
     }
 
     public String getEvidence() {
@@ -309,25 +328,34 @@ public class AutoMaxoRow implements Serializable {
     }
 
     public boolean isDiseaseLevelAnnotation() {
-        return diseaseLevelAnnotation;
+        return diseaseLevelProperty.get();
     }
 
     public void setDiseaseLevelAnnotation(boolean diseaseLevelAnnotation) {
-        this.diseaseLevelAnnotation = diseaseLevelAnnotation;
+        this.diseaseLevelProperty.set(diseaseLevelAnnotation);
     }
 
     public Set<String> getApprovedPmidSet() {
         return approvedPmidSet;
     }
 
+
+
+
     public List<String> getPoetRows(String orcid) {
         List<String> rows = new ArrayList<>();
         for (String pmid : getApprovedPmidSet()) {
-            var row = new PoetOutputRow(mondoTerm,
+            Term hpoT;
+            if (diseaseLevelProperty.get()) {
+                hpoT = PHENOTYPIC_ABNORMALITY; // "disease-level annotation"
+            } else {
+                hpoT = hpoTerm().get();
+            }
+            var row = new PoetOutputRow(mondoTerm().get(),
                     pmid,
-                    maxoTerm,
-                    hpoTerm,
-                    maxoRelation,
+                    maxoTerm().get(),
+                    hpoT,
+                    maxoRelationProperty.get(),
                     orcid);
             rows.add(row.getRowAsTsv());
         }

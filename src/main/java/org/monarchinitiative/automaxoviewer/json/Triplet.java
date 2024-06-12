@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class Triplet {
     
     private  String maxo;
@@ -123,40 +126,24 @@ public class Triplet {
         return hpo_extension;
     }
 
-    public void setMaxo(String maxo) {
-        this.maxo = maxo;
+
+    private String getDisplay(String grounded, String ungrounded, PotentialOntologyTerm[] poterm) {
+        if (grounded != null && ! grounded.isEmpty()) return grounded;
+        if (ungrounded != null && ! ungrounded.isEmpty()) return ungrounded;
+        return Arrays.stream(poterm).map(PotentialOntologyTerm::getLabel).collect(Collectors.joining(";"));
+     }
+
+
+  public String getMaxoDisplay() {
+        return getDisplay(getMaxo_label(), getNon_grounded_maxo(), potential_maxo);
+  }
+
+    public String getHpoDisplay() {
+        return getDisplay(getHpo_label(), getNon_grounded_hpo(), potential_hpo);
     }
 
-    public void setMaxo_label(String maxo_label) {
-        this.maxo_label = maxo_label;
-    }
-
-    public void setNon_grounded_maxo(String non_grounded_maxo) {
-        this.non_grounded_maxo = non_grounded_maxo;
-    }
-
-    public void setPotential_maxo(PotentialOntologyTerm[] potential_maxo) {
-        this.potential_maxo = potential_maxo;
-    }
-
-    public void setRelationship(String relationship) {
-        this.relationship = relationship;
-    }
-
-    public void setHpo(String hpo) {
-        this.hpo = hpo;
-    }
-
-    public void setHpo_label(String hpo_label) {
-        this.hpo_label = hpo_label;
-    }
-
-    public void setNon_grounded_hpo(String non_grounded_hpo) {
-        this.non_grounded_hpo = non_grounded_hpo;
-    }
-
-    public void setPotential_hpo(PotentialOntologyTerm[] potential_hpo) {
-        this.potential_hpo = potential_hpo;
+    public String getMondoDisplay() {
+        return getDisplay(getMondo_label(), getNon_grounded_mondo(), potential_mondo);
     }
 
     public void setMondo(String mondo) {

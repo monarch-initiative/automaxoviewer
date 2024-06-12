@@ -88,4 +88,10 @@ public class Model {
     public Optional<File> getAnnotationFile() {
         return Optional.ofNullable(annotationFile);
     }
+
+
+    public Optional<String> getOrcid() {
+        if (options == null) return Optional.empty();
+        else return Optional.of(options.getOrcid());
+    }
 }

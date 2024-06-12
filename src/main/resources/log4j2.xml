@@ -21,6 +21,15 @@
     <logger name="org.monarchinitiative.phenol">
         <level value="ERROR" />
     </logger>
+    <logger name="org.monarchinitiative.phenol.graph.util">
+        <level value="error" />
+    </logger>
+    <logger name="org.monarchinitiative.phenol.io.obographs">
+        <level value="error" />
+    </logger>
+    <logger name="org.monarchinitiative.phenol.utils">
+        <level value="error" />
+    </logger>
 
     <!-- Root Logger -->
     <root>
@@ -29,8 +38,6 @@
         <appender-ref ref="File" />
     </root>
 
-    <!-- Logger for specific package -->
-    <logger name="com.example">
-        <level value="info" />
-    </logger>
+
+
 </configuration>

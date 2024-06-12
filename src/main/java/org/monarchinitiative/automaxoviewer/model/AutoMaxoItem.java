@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -108,5 +109,19 @@ public class AutoMaxoItem {
         return List.of();
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.pmidAsTermId, this.subjectLabel, this.subjectMAxOId);
+    }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof AutoMaxoItem item) {
+            return item.subjectMAxOId.equals(this.subjectMAxOId) &&
+                    item.subjectLabel.equals(this.subjectLabel) &&
+                    item.pmidAsTermId.equals(this.pmidAsTermId);
+        } else {
+            return false;
+        }
+    }
 }

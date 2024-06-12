@@ -8,7 +8,7 @@ import java.util.List;
 
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
-
+import java.util.Objects;
 
 
 /**
@@ -31,7 +31,7 @@ last_updated</li>
 created</li>
  * </ol>
  */
-public class PoetOutputRow {
+public class PoetOutputRow implements Comparable<PoetOutputRow>{
 
     private static final List<String> headerFields = List.of("disease_id",
             "disease_name",
@@ -55,9 +55,12 @@ public class PoetOutputRow {
     private static final String EVIDENCE_CODE = "PCS";
 
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-;
 
-    private final List<String> fields;
+
+
+    private final String maxoLabel;
+
+    private final String line;
 
     public PoetOutputRow(Term mondoTerm,
                          String sourceId,
@@ -65,7 +68,7 @@ public class PoetOutputRow {
                          Term hpoTerm,
                          MaxoRelation maxoRelation,
                          String orcid) {
-        fields = new ArrayList<>();
+        List<String> fields = new ArrayList<>();
         fields.add(mondoTerm.id().getValue());
         fields.add(mondoTerm.getName());
         if (! sourceId.startsWith("PMID")) {
@@ -90,13 +93,41 @@ public class PoetOutputRow {
         // String like 2022-02-15
         LocalDateTime today = LocalDateTime.now();
         fields.add(dtf.format(today));
+        line = String.join("\t", fields);
+        maxoLabel = maxoTerm.getName();
     }
 
     public static String getHeader() {
         return header;
     }
 
-    public String getRowAsTsv() {
-        return String.join("\t", fields);
+    public String geTsvLine() {
+        return line;
+    }
+
+    public String getMaxoLabel() {
+        return maxoLabel;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(line);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof PoetOutputRow por) {
+            return line.equals(por.line);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int compareTo(PoetOutputRow other) {
+        if (! this.maxoLabel.equals(other.maxoLabel)) {
+            return this.line.compareTo(other.line);
+        }
+        return this.maxoLabel.compareTo(other.maxoLabel);
     }
 }

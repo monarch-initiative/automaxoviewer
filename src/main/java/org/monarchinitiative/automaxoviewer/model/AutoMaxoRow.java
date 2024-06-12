@@ -55,8 +55,6 @@ public class AutoMaxoRow implements Serializable {
 
 
     private String source_id = null;
-
-
     private String evidence = null;
     private String extension_id = null;
     private String extension_name = null;
@@ -120,17 +118,17 @@ public class AutoMaxoRow implements Serializable {
     }
 
     public String getMaxoId() {
-        return maxoId;
+        return maxoId== null ? "": maxoId;
     }
 
 
     public String getCandidateMaxoLabel() {
-        return candidateMaxoLabel;
+        return candidateMaxoLabel== null ? "": candidateMaxoLabel;
     }
 
 
     public String getNonGroundedMaxo() {
-        return nonGroundedMaxo;
+        return nonGroundedMaxo== null ? "": nonGroundedMaxo;
     }
 
 
@@ -140,21 +138,21 @@ public class AutoMaxoRow implements Serializable {
 
 
     public String getRelationship() {
-        return relationship;
+        return relationship== null ? "": relationship;
     }
 
 
     public String getHpoId() {
-        return hpoId;
+        return hpoId== null ? "": hpoId;
     }
 
     public String getCandidateHpoLabel() {
-        return candidateHpoLabel;
+        return candidateHpoLabel== null ? "": candidateHpoLabel;
     }
 
 
     public String getNonGroundedHpo() {
-        return nonGroundedHpo;
+        return nonGroundedHpo== null ? "": nonGroundedHpo;
     }
 
 
@@ -164,15 +162,15 @@ public class AutoMaxoRow implements Serializable {
 
 
     public String getMondoId() {
-        return mondoId;
+        return mondoId== null ? "": mondoId;
     }
 
     public String getCandidateMondoLabel() {
-        return candidateMondoLabel;
+        return candidateMondoLabel== null ? "": candidateMondoLabel;
     }
 
     public String getNonGroundedMondo() {
-        return nonGroundedMondo;
+        return nonGroundedMondo== null ? "": nonGroundedMondo;
     }
 
 
@@ -181,7 +179,7 @@ public class AutoMaxoRow implements Serializable {
     }
 
     public String getMaxoQualifier() {
-        return maxoQualifier;
+        return maxoQualifier== null ? "": maxoQualifier;
     }
 
 
@@ -191,7 +189,7 @@ public class AutoMaxoRow implements Serializable {
 
 
     public String getHpoExtension() {
-        return hpoExtension;
+        return hpoExtension == null ? "": hpoExtension;
     }
 
 
@@ -287,7 +285,7 @@ public class AutoMaxoRow implements Serializable {
     }
 
     public String getSource_id() {
-        return source_id;
+        return source_id == null ? "":source_id;
     }
 
     public void setSource_id(String source_id) {
@@ -304,7 +302,7 @@ public class AutoMaxoRow implements Serializable {
     }
 
     public String getEvidence() {
-        return evidence;
+        return evidence == null ? "": evidence;
     }
 
     public void setEvidence(String evidence) {
@@ -312,7 +310,7 @@ public class AutoMaxoRow implements Serializable {
     }
 
     public String getExtension_id() {
-        return extension_id;
+        return extension_id == null ? "":extension_id;
     }
 
     public void setExtension_id(String extension_id) {
@@ -320,7 +318,7 @@ public class AutoMaxoRow implements Serializable {
     }
 
     public String getExtension_name() {
-        return extension_name;
+        return extension_name == null ? "":extension_name;
     }
 
     public void setExtension_name(String extension_name) {
@@ -340,10 +338,22 @@ public class AutoMaxoRow implements Serializable {
     }
 
 
+    public boolean readyToBeAnnotated() {
+        if ( mondoProperty.get() == null || ! mondoProperty.get().id().getPrefix().equals("MONDO")) {
+            return false;
+        }
+        if ( maxoProperty.get() == null || ! maxoProperty.get().id().getPrefix().equals("MAXO")) {
+            return false;
+        }
+        if (diseaseLevelProperty.get()) return true;
+        if ( hpoProperty.get() == null || ! hpoProperty.get().id().getPrefix().equals("HP")) {
+            return false;
+        }
+        return true;
+    }
 
-
-    public List<String> getPoetRows(String orcid) {
-        List<String> rows = new ArrayList<>();
+    public List<PoetOutputRow> getPoetRows(String orcid) {
+        List<PoetOutputRow> rows = new ArrayList<>();
         for (String pmid : getApprovedPmidSet()) {
             Term hpoT;
             if (diseaseLevelProperty.get()) {
@@ -357,10 +367,37 @@ public class AutoMaxoRow implements Serializable {
                     hpoT,
                     maxoRelationProperty.get(),
                     orcid);
-            rows.add(row.getRowAsTsv());
+            rows.add(row);
         }
         return rows;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(getSource_id() ,getEvidence(), approvedPmidSet,
+                maxoId,candidateMaxoLabel,nonGroundedMaxo,potentialMaxo,relationship,
+                hpoId, candidateHpoLabel,nonGroundedHpo,potentialHpo,mondoId,candidateMondoLabel,nonGroundedMondo,
+                 potentialMondo, maxoQualifier, count,citationList);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof AutoMaxoRow row) {
+            return row.getSource_id().equals(getSource_id()) &&
+                    row.getEvidence().equals(getEvidence()) &&
+                    row.getMaxoId().equals(getMaxoId()) &&
+                    row.getCandidateMaxoLabel().equals(getCandidateMaxoLabel()) &&
+                    row.getNonGroundedMaxo().equals(getNonGroundedMaxo()) &&
+                    row.relationship.equals(relationship) &&
+                    row.getHpoId().equals(getHpoId()) &&
+                    row.getCandidateHpoLabel().equals(getCandidateHpoLabel()) &&
+                    row.getNonGroundedHpo().equals(getNonGroundedHpo()) &&
+                    row.getMondoId().equals(getMondoId()) &&
+                    row.getCandidateMondoLabel().equals(getCandidateMondoLabel()) &&
+                    row.count == count ;
+        } else {
+            return false;
+        }
+    }
 
 }

@@ -26,10 +26,7 @@ import javafx.stage.Window;
 import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
 import org.monarchinitiative.automaxoviewer.json.AutomaxoJson;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
-import org.monarchinitiative.automaxoviewer.model.AutoMaxoRow;
-import org.monarchinitiative.automaxoviewer.model.ItemStatus;
-import org.monarchinitiative.automaxoviewer.model.MaxoRelation;
-import org.monarchinitiative.automaxoviewer.model.Model;
+import org.monarchinitiative.automaxoviewer.model.*;
 import org.monarchinitiative.automaxoviewer.view.CurrentItemVisualizable;
 import org.monarchinitiative.automaxoviewer.view.OntologyTermAdder;
 import org.monarchinitiative.automaxoviewer.view.PmidAbstractTextVisualizer;
@@ -47,10 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class MainWindowController extends BaseController implements Initializable {
     private final Logger LOGGER = LoggerFactory.getLogger(MainWindowController.class);
@@ -111,6 +105,8 @@ public class MainWindowController extends BaseController implements Initializabl
     /** The Mondo term that we are curating with this file. We set it once and it should stick around until / unless we change it. */
     private Term mondoTerm = null;
 
+    private final Set<PoetOutputRow> outputRowSet;
+
     /**
      * This gets set to true once the Ontology tree has finished initiatializing. Before that
      * we can check to make sure the user does not try to open a disease before the Ontology is
@@ -124,6 +120,7 @@ public class MainWindowController extends BaseController implements Initializabl
     public MainWindowController(ViewFactory viewFactory, String fxmlName) {
         super(viewFactory, fxmlName);
         model = new Model();
+        outputRowSet = new HashSet<>();
     }
 
     @FXML
@@ -344,9 +341,14 @@ public class MainWindowController extends BaseController implements Initializabl
                                 TableRow<AutoMaxoRow> currentRow = cell.getTableRow();
                                 currentRow.setStyle("");
                             });
-                            MenuItem summaryMenuItem = new MenuItem("Completed");
+                            MenuItem summaryMenuItem = new MenuItem("annotate");
                             summaryMenuItem.setOnAction(e -> {
                                 AutoMaxoRow item = cell.getTableRow().getItem();
+                                if (! item.readyToBeAnnotated()) {
+                                    PopUps.alertDialog("ERROR", "Current row not ready to be annotated");
+                                    return;
+                                }
+                                annotateAutomaxoRow(item);
                                 item.setItemStatus(ItemStatus.ANNOTATED);
                                 TableRow<AutoMaxoRow> currentRow = cell.getTableRow();
                                 currentRow.setStyle(ANNOTATED_COLOR);
@@ -625,11 +627,7 @@ public class MainWindowController extends BaseController implements Initializabl
     }
 
 
-    public void createAnnot(ActionEvent e) {
-        e.consume();
-        System.out.println("create annotation");
-       // AutoMaxoRow currentRow = model.getCurrentRow();
-        AutoMaxoRow currentRow = automaxoTableView.getSelectionModel().getSelectedItems().getFirst();
+    private void annotateAutomaxoRow(AutoMaxoRow currentRow) {
         Term mondoTerm = this.mondoTerm;
         Optional<Term> hpoTermOpt = this.hpoTermAdder.getTermIfValid();
         Optional<Term> maxoTermOpt = this.maxoTermAdder.getTermIfValid();
@@ -656,16 +654,27 @@ public class MainWindowController extends BaseController implements Initializabl
         currentRow.setHpo(hpoTerm);
         currentRow.setDiseaseTerm(mondoTerm);
         currentRow.setMaxoRelation(relation);
-        automaxoTableView.refresh();
+        String orcid = model.getOrcid().orElse("n/a");
+        outputRowSet.addAll(currentRow.getPoetRows(orcid));
+        LOGGER.info("Number of annotations so far {}", outputRowSet.size());
         long count = automaxoTableView.getItems().stream().filter(AutoMaxoRow::isAnnotated).count();
         LOGGER.info("Current row status {}", currentRow.getItemStatus());
         LOGGER.info("Total annotated items {}", count);
     }
 
+
+    public void createAnnot(ActionEvent e) {
+        e.consume();
+        System.out.println("create annotation");
+       // AutoMaxoRow currentRow = model.getCurrentRow();
+        AutoMaxoRow currentRow = automaxoTableView.getSelectionModel().getSelectedItems().getFirst();
+       annotateAutomaxoRow(currentRow);
+    }
+
     @FXML
     public void exportAnnotationFile(ActionEvent actionEvent) {
         LOGGER.info("Exporting POET annotation file");
-        List<AutoMaxoRow> autoMaxoRowList = this.automaxoTableView.getItems();
+        /*List<AutoMaxoRow> autoMaxoRowList = this.automaxoTableView.getItems();
         List<String> outputrows = new ArrayList<>();
         String orcid = model.getOrcid().orElse("n/a");
         for (var amrow : autoMaxoRowList) {
@@ -674,13 +683,20 @@ public class MainWindowController extends BaseController implements Initializabl
                 outputrows.addAll(amrow.getPoetRows(orcid));
             }
         }
+
+         */
+        List<PoetOutputRow> porList = new ArrayList<>(outputRowSet);
+        Collections.sort(porList);
+        List<String> outputrows = new ArrayList<>();
+        for (var row : porList) {
+            outputrows.add(row.geTsvLine());
+        }
+
         Optional<Window> opt =   Stage.getWindows().stream().filter(Window::isShowing).findAny();
         Stage stage;
         stage = (Stage) opt.orElse(null);
         String home = System.getProperty("user.home");
-        // Stage ownerWindow, File initialDirectory, String title, String initialFileName
         File f = PopUps.selectFileToSave(stage, new File(home), "Save maxo annotations", "maxo_DISEASE.tsv");
-
         try {
             Path filePath = Paths.get(f.getAbsolutePath());
             Files.deleteIfExists(filePath);

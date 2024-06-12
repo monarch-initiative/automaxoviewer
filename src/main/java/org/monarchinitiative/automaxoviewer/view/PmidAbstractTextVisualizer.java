@@ -31,7 +31,7 @@ public class PmidAbstractTextVisualizer extends MaxoVisualizer  {
         return String.format("<h1>Abstract %d/%d</h1>\n", (1+count), row.getCitationList().size());
     }
 
-    private Set<String> stopWords = Set.of("the", "of", "a", "an", "that");
+    private final Set<String> stopWords = Set.of("the", "of", "a", "an", "that");
 
 
     private String getMarkedUpText(String text, String hpoLabel, String maxoLabel) {

@@ -22,12 +22,14 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
 import org.monarchinitiative.automaxoviewer.json.AutomaxoJson;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 import org.monarchinitiative.automaxoviewer.model.AutoMaxoRow;
 import org.monarchinitiative.automaxoviewer.model.ItemStatus;
+import org.monarchinitiative.automaxoviewer.model.MaxoRelation;
 import org.monarchinitiative.automaxoviewer.model.Model;
 import org.monarchinitiative.automaxoviewer.view.CurrentItemVisualizable;
 import org.monarchinitiative.automaxoviewer.view.OntologyTermAdder;
@@ -42,6 +44,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -64,13 +71,15 @@ public class MainWindowController extends BaseController implements Initializabl
     @FXML
     public WebView currentAutoMaxoWebView;
     @FXML
-    public ChoiceBox<String> relationCB;
+    public ChoiceBox<MaxoRelation> relationCB;
     @FXML
     public CheckBox diseaseLevelAnnotationCheckBBox;
     @FXML
     public Button nextAbstractButton;
     @FXML
     public OntologyTermAdder mondoTermAdder;
+    @FXML
+    public CheckBox diseaseLevelAnnotationCheckBox;
 
 
     @FXML
@@ -99,6 +108,9 @@ public class MainWindowController extends BaseController implements Initializabl
     private OntologyTermAdder hpoTermAdder;
 
     private final Model model;
+
+    /** The Mondo term that we are curating with this file. We set it once and it should stick around until / unless we change it. */
+    private Term mondoTerm = null;
 
     /**
      * This gets set to true once the Ontology tree has finished initiatializing. Before that
@@ -233,17 +245,12 @@ public class MainWindowController extends BaseController implements Initializabl
      * Lack of observed response
      */
     private void setUpChoiceBox() {
-        this.relationCB.getItems().add("treats");
-        this.relationCB.getItems().add("prevents");
-        this.relationCB.getItems().add("investigates");
-        this.relationCB.getItems().add("contraindicated");
-        this.relationCB.getItems().add("lack of observed response");
-        this.relationCB.getItems().add("unknown");
-        relationCB.setValue("unknown");
+        this.relationCB.getItems().addAll(MaxoRelation.values());
+        relationCB.setValue(MaxoRelation.TREATS);
         relationCB.setOnAction((event) -> {
             int selectedIndex = relationCB.getSelectionModel().getSelectedIndex();
-            String selectedItem = relationCB.getSelectionModel().getSelectedItem();
-            System.out.println("Selection made: [" + selectedIndex + "] " + selectedItem);
+            MaxoRelation selectedItem = relationCB.getSelectionModel().getSelectedItem();
+            System.out.println("Selection made: [" + selectedIndex + "] " + selectedItem.toString());
         });
 
     }
@@ -291,15 +298,7 @@ public class MainWindowController extends BaseController implements Initializabl
     private void clearFields() {
         hpoTermAdder.clearFields();
         maxoTermAdder.clearFields();
-        mondoTermAdder.clearFields();
-        /*
-        this.termLabelValidator.clearFields();
-
-        this.definitionPane.clearFields();
-        this.pmidXrefAdderBox.clearFields();
-        this.addNewHpoTermBox.clearFields();
-
-         */
+        /* Don't clear Mondo -- we want to leave the correct disease */
     }
 
     /**
@@ -383,7 +382,7 @@ public class MainWindowController extends BaseController implements Initializabl
             }
         });
 
-        maxoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getMaxo_name()));
+        maxoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getMaxoLabel()));
         maxoLabelCol.setCellFactory((column) -> {
             final TableCell<AutoMaxoRow, String> cell = new TableCell<>();
             cell.itemProperty().addListener(// ChangeListener
@@ -424,7 +423,7 @@ public class MainWindowController extends BaseController implements Initializabl
         relationCol.setCellFactory(TextFieldTableCell.forTableColumn());
         relationCol.setEditable(true);
 
-        hpoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getHpo_name()));
+        hpoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getHpoLabel()));
         hpoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
         hpoLabelCol.setEditable(true);
 
@@ -433,7 +432,7 @@ public class MainWindowController extends BaseController implements Initializabl
         pmidCountCol.setEditable(false);
 
 
-        mondoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getDisease_name()));
+        mondoLabelCol.setCellValueFactory(cdf -> new ReadOnlyStringWrapper(cdf.getValue().getMondoLabel()));
         mondoLabelCol.setCellFactory(TextFieldTableCell.forTableColumn());
         mondoLabelCol.setEditable(true);
 
@@ -660,6 +659,33 @@ public class MainWindowController extends BaseController implements Initializabl
 
     public void createAnnot(ActionEvent actionEvent) {
         System.out.println("create annotation");
+        AutoMaxoRow currentRow = model.getCurrentRow();
+        Term mondoTerm = this.mondoTerm;
+        Optional<Term> hpoTermOpt = this.hpoTermAdder.getTermIfValid();
+        Optional<Term> maxoTermOpt = this.maxoTermAdder.getTermIfValid();
+        Optional<Term> monodTermOpt = this.mondoTermAdder.getTermIfValid();
+        if (monodTermOpt.isEmpty()) {
+            PopUps.alertDialog("Error", "Cannot add annotation unless MONDO term is valid (green border)");
+            return;
+        }
+        if (hpoTermOpt.isEmpty()) {
+            PopUps.alertDialog("Error", "Cannot add annotation unless HPO term is valid (green border)");
+            return;
+        }
+        if (maxoTermOpt.isEmpty()) {
+            PopUps.alertDialog("Error", "Cannot add annotation unless Maxo term is valid (green border)");
+            return;
+        }
+        MaxoRelation relation = this.relationCB.getValue();
+
+        this.mondoTerm = monodTermOpt.get();
+        Term hpoTerm = hpoTermOpt.get();
+        Term maxoTerm = maxoTermOpt.get();
+        currentRow.setItemStatus(ItemStatus.ANNOTATED);
+        currentRow.setMaxo(maxoTerm);
+        currentRow.setHpo(hpoTerm);
+        currentRow.setDiseaseTerm(mondoTerm);
+        currentRow.setMaxoRelation(relation);
     }
 
     public void viewNextAbstract(ActionEvent actionEvent) {
@@ -754,6 +780,39 @@ public class MainWindowController extends BaseController implements Initializabl
             File annotFile = opt.get();
             model.setAnnotationFile(annotFile);
             serializeAutomaxoRowsToFile();
+        }
+    }
+
+    public void exportAnnotationFile(ActionEvent actionEvent) {
+        List<AutoMaxoRow> autoMaxoRowList = this.automaxoTableView.getItems();
+        List<String> outputrows = new ArrayList<>();
+        String orcid = "TOTOS";
+        for (var amrow : autoMaxoRowList) {
+            if (amrow.getItemStatus().equals(ItemStatus.ANNOTATED)) {
+                outputrows.addAll(amrow.getPoetRows(orcid));
+            }
+        }
+        Optional<Window> opt =   Stage.getWindows().stream().filter(Window::isShowing).findAny();
+        Stage stage;
+        if (opt.isPresent()) {
+            stage = (Stage) opt.get();
+        } else {
+            stage = null;
+        }
+        String home = System.getProperty("user.home");
+        // Stage ownerWindow, File initialDirectory, String title, String initialFileName
+        File f = PopUps.selectFileToSave(stage, new File(home), "Save maxo annotations", "maxo_DISEASE.tsv");
+
+        try {
+            Path filePath = Paths.get(f.getAbsolutePath());
+            Files.deleteIfExists(filePath);
+            Files.createFile(filePath);
+            for (String str : outputrows) {
+                Files.writeString(filePath, str + System.lineSeparator(),
+                        StandardOpenOption.APPEND);
+            }
+        } catch (IOException e) {
+            PopUps.alertDialog("Could not save Maxo annotations", e.getMessage());
         }
     }
 }

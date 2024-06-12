@@ -4,6 +4,7 @@ package org.monarchinitiative.automaxoviewer.model;
 import javafx.beans.property.ObjectProperty;
 import org.monarchinitiative.automaxoviewer.json.PotentialOntologyTerm;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
+import org.monarchinitiative.phenol.ontology.data.Term;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -40,21 +41,19 @@ public class AutoMaxoRow implements Serializable {
 
 
     private final javafx.beans.property.ObjectProperty<ItemStatus> itemStatus;
+    private Term mondoTerm = null;
+    private Term maxoTerm = null;
+    private Term hpoTerm = null;
 
-    private String disease_id = null;
-    private String disease_name = null;
     private String source_id = null;
-    private String maxo_id = null;
-    private String maxo_name = null;
-    private String hpo_name = null;
-    private String hpo_id = null;
-    private String relation = null;
+
+    private MaxoRelation maxoRelation = MaxoRelation.UNKNOWN;
     private String evidence = null;
     private String extension_id = null;
     private String extension_name = null;
     /** If true, the medical action is for the entire disease rather than for a specific feature (HPO term). */
     private boolean diseaseLevelAnnotation = false;
-    private Set<String> approvedPmidSet;
+    private final Set<String> approvedPmidSet;
 
 
     private final String maxoId;
@@ -102,9 +101,6 @@ public class AutoMaxoRow implements Serializable {
         // The following items are shown in the GUI and are mutable
         itemStatus =  new javafx.beans.property.SimpleObjectProperty<>();
         itemStatus.set(ItemStatus.IN_PROGRESS);
-        this.disease_name = mondoDisplay();
-        this.maxo_name = maxoDisplay();
-        this.hpo_name = hpoDisplay();
         this.approvedPmidSet = new HashSet<>();
     }
 
@@ -250,20 +246,25 @@ public class AutoMaxoRow implements Serializable {
         this.itemStatus.set(itemStatus);
     }
 
-    public String getDisease_id() {
-        return disease_id;
+    public Optional<Term> mondoTerm() {
+        return Optional.ofNullable(mondoTerm);
+    }
+    public void setDiseaseTerm(Term term) {
+        this.mondoTerm = term;
     }
 
-    public void setDisease_id(String disease_id) {
-        this.disease_id = disease_id;
+    public Optional<Term> maxoTerm() {
+        return Optional.ofNullable(maxoTerm);
+    }
+    public void setMaxo(Term term) {
+        this.maxoTerm = term;
     }
 
-    public String getDisease_name() {
-        return disease_name;
+    public Optional<Term> hpoTerm() {
+        return Optional.ofNullable(hpoTerm);
     }
-
-    public void setDisease_name(String disease_name) {
-        this.disease_name = disease_name;
+    public void setHpo(Term term) {
+        this.hpoTerm = term;
     }
 
     public String getSource_id() {
@@ -274,44 +275,13 @@ public class AutoMaxoRow implements Serializable {
         this.source_id = source_id;
     }
 
-    public String getMaxo_id() {
-        return maxo_id;
+
+    public MaxoRelation getMaxoRelation() {
+        return maxoRelation;
     }
 
-    public void setMaxo_id(String maxo_id) {
-        this.maxo_id = maxo_id;
-    }
-
-    public String getMaxo_name() {
-        return maxo_name;
-    }
-
-    public void setMaxo_name(String maxo_name) {
-        this.maxo_name = maxo_name;
-    }
-
-    public String getHpo_name() {
-        return hpo_name;
-    }
-
-    public void setHpo_name(String hpo_name) {
-        this.hpo_name = hpo_name;
-    }
-
-    public String getHpo_id() {
-        return hpo_id;
-    }
-
-    public void setHpo_id(String hpo_id) {
-        this.hpo_id = hpo_id;
-    }
-
-    public String getRelation() {
-        return relation;
-    }
-
-    public void setRelation(String relation) {
-        this.relation = relation;
+    public void setMaxoRelation(MaxoRelation maxoRelation) {
+        this.maxoRelation = maxoRelation;
     }
 
     public String getEvidence() {
@@ -348,6 +318,20 @@ public class AutoMaxoRow implements Serializable {
 
     public Set<String> getApprovedPmidSet() {
         return approvedPmidSet;
+    }
+
+    public List<String> getPoetRows(String orcid) {
+        List<String> rows = new ArrayList<>();
+        for (String pmid : getApprovedPmidSet()) {
+            var row = new PoetOutputRow(mondoTerm,
+                    pmid,
+                    maxoTerm,
+                    hpoTerm,
+                    maxoRelation,
+                    orcid);
+            rows.add(row.getRowAsTsv());
+        }
+        return rows;
     }
 
 

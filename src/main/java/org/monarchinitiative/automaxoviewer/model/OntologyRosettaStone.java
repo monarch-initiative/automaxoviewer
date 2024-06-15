@@ -18,14 +18,18 @@ public class OntologyRosettaStone {
 
     private final Map<TermId, String> idToLabelMap;
 
-    public OntologyRosettaStone(MinimalOntology ontology) {
+    public OntologyRosettaStone(MinimalOntology ontology, String prefix) {
         Map<String, Term> labelMap = new HashMap<>();
         Map<TermId, String> idMap = new HashMap<>();
         if (ontology == null) {
             LOGGER.error("Attempt to initialize HpoRosettaStone but ontology argument was null");
         } else {
-            ontology.getTerms().forEach(term ->  labelMap.putIfAbsent(term.getName(), term));
-            ontology.getTerms().forEach(term ->  idMap.putIfAbsent(term.id(), term.getName()));
+            ontology.getTerms().stream()
+                    .filter(term -> term.id().getPrefix().equals(prefix))
+                    .forEach(term -> {
+                        labelMap.putIfAbsent(term.getName(), term);
+                        idMap.putIfAbsent(term.id(), term.getName());
+                    });
         }
         this.labelToTermMap = Map.copyOf(labelMap);
         idToLabelMap = Map.copyOf(idMap);

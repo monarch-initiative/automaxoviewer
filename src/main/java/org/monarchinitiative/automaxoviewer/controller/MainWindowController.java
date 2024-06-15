@@ -102,9 +102,6 @@ public class MainWindowController extends BaseController implements Initializabl
 
     private final Model model;
 
-    /** The Mondo term that we are curating with this file. We set it once and it should stick around until / unless we change it. */
-    private Term mondoTerm = null;
-
     private final Set<PoetOutputRow> outputRowSet;
 
     /**
@@ -143,13 +140,13 @@ public class MainWindowController extends BaseController implements Initializabl
                     MinimalOntology minOntology = OntologyLoader.loadOntology(maxoJsonFile);
                     LOGGER.info("Loaded MAxO, version {}", minOntology.version().orElse("n/a"));
                     maxoOntology.set(minOntology);
-                    maxoTermAdder.setOntology(maxoOntology.get());
+                    maxoTermAdder.setOntology(maxoOntology.get(), "MAXO");
                     return minOntology;
                 }
             };
             maxoLoadTask.setOnSucceeded(e -> {
                 maxoOntology.set(maxoLoadTask.getValue());
-                maxoTermAdder.setOntology(this.maxoOntology.get());
+                maxoTermAdder.setOntology(this.maxoOntology.get(), "MAXO");
             });
             maxoLoadTask.setOnFailed(e -> {
                 LOGGER.warn("Could not load MAxO from {}", maxoJsonFile.getAbsolutePath());
@@ -170,13 +167,13 @@ public class MainWindowController extends BaseController implements Initializabl
                 protected MinimalOntology call() {
                     MinimalOntology hpoOntology = OntologyLoader.loadOntology(hpJsonFilePath);
                     LOGGER.info("Loaded HPO, version {}", hpoOntology.version().orElse("n/a"));
-                    hpoTermAdder.setOntology(hpOntology.get());
+                    hpoTermAdder.setOntology(hpOntology.get(), "HPO");
                     return hpoOntology;
                 }
             };
             hpoLoadTask.setOnSucceeded(e -> {
                 hpOntology.set(hpoLoadTask.getValue());
-                hpoTermAdder.setOntology(this.hpOntology.get());
+                hpoTermAdder.setOntology(this.hpOntology.get(), "HP");
             });
             hpoLoadTask.setOnFailed(e -> {
                 LOGGER.warn("Could not load HPO from {}", hpJsonFilePath.getAbsolutePath());
@@ -197,13 +194,13 @@ public class MainWindowController extends BaseController implements Initializabl
                 protected MinimalOntology call() {
                     MinimalOntology hpoOntology = OntologyLoader.loadOntology(mondoJsonFilePath);
                     LOGGER.info("Loaded Mondo, version {}", hpoOntology.version().orElse("n/a"));
-                    hpoTermAdder.setOntology(hpOntology.get());
+                    hpoTermAdder.setOntology(hpOntology.get(), "MONDO");
                     return hpoOntology;
                 }
             };
             mondoLoadTask.setOnSucceeded(e -> {
                 mondoOntology.set(mondoLoadTask.getValue());
-                mondoTermAdder.setOntology(this.mondoOntology.get());
+                mondoTermAdder.setOntology(this.mondoOntology.get(), "MONDO");
             });
             mondoLoadTask.setOnFailed(e -> {
                 LOGGER.warn("Could not load Mondo from {}", mondoJsonFilePath.getAbsolutePath());
@@ -628,11 +625,10 @@ public class MainWindowController extends BaseController implements Initializabl
 
 
     private void annotateAutomaxoRow(AutoMaxoRow currentRow) {
-        Term mondoTerm = this.mondoTerm;
         Optional<Term> hpoTermOpt = this.hpoTermAdder.getTermIfValid();
         Optional<Term> maxoTermOpt = this.maxoTermAdder.getTermIfValid();
-        Optional<Term> monodTermOpt = this.mondoTermAdder.getTermIfValid();
-        if (monodTermOpt.isEmpty()) {
+        Optional<Term> mondoTermOpt = this.mondoTermAdder.getTermIfValid();
+        if (mondoTermOpt.isEmpty()) {
             PopUps.alertDialog("Error", "Cannot add annotation unless MONDO term is valid (green border)");
             return;
         }
@@ -646,7 +642,7 @@ public class MainWindowController extends BaseController implements Initializabl
         }
         MaxoRelation relation = this.relationCB.getValue();
 
-        this.mondoTerm = monodTermOpt.get();
+        Term mondoTerm = mondoTermOpt.get();
         Term hpoTerm = hpoTermOpt.get();
         Term maxoTerm = maxoTermOpt.get();
         currentRow.setItemStatus(ItemStatus.ANNOTATED);
@@ -660,6 +656,7 @@ public class MainWindowController extends BaseController implements Initializabl
         long count = automaxoTableView.getItems().stream().filter(AutoMaxoRow::isAnnotated).count();
         LOGGER.info("Current row status {}", currentRow.getItemStatus());
         LOGGER.info("Total annotated items {}", count);
+        clearFields();
     }
 
 

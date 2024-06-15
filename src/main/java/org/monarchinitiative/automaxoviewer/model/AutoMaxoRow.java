@@ -5,6 +5,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
 import org.monarchinitiative.automaxoviewer.json.PotentialOntologyTerm;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 import org.monarchinitiative.phenol.ontology.data.Term;
@@ -352,9 +353,28 @@ public class AutoMaxoRow implements Serializable {
         return true;
     }
 
+    public List<String> getAllPmids() {
+        return this.citationList.stream()
+                .map(PubMedCitation::getPmidTermId)
+                .map(TermId::getValue)
+                .toList();
+    }
+
     public List<PoetOutputRow> getPoetRows(String orcid) {
         List<PoetOutputRow> rows = new ArrayList<>();
-        for (String pmid : getApprovedPmidSet()) {
+        if (mondoProperty.get() == null) {
+            PopUps.alertDialog("error","MONDO not initialized, cannot annotate");
+            return rows;
+        }
+        if (maxoProperty.get() == null){
+            PopUps.alertDialog("error","MAXO Term not initialized, cannot annotate");
+            return rows;
+        }
+        if (hpoProperty.get() == null){
+            PopUps.alertDialog("error","HPO Term not initialized, cannot annotate");
+            return rows;
+        }
+        for (String pmid : getAllPmids()) {
             Term hpoT;
             if (diseaseLevelProperty.get()) {
                 hpoT = PHENOTYPIC_ABNORMALITY; // "disease-level annotation"

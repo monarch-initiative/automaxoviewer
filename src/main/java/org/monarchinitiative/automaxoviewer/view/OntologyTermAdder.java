@@ -51,7 +51,14 @@ public class OntologyTermAdder extends HBox {
         }
     }
 
-    public void setOntology(MinimalOntology ontology) {
+    /**
+     * Set an ontology (HPO, MAXO, MONDO) and only take the terms that start with the corresponding prefix
+     * (This is useful because there are many other ontology terms in the JSON files that we do not want to
+     * offer for the autocomplete)
+     * @param ontology e.g. HPO object
+     * @param prefix, e.g. the corresponding Term prefix, "HP"
+     */
+    public void setOntology(MinimalOntology ontology, String prefix) {
         if (ontology == null) {
             LOGGER.error("Attempt to set Ontology with null pointer.");
             return;
@@ -64,11 +71,15 @@ public class OntologyTermAdder extends HBox {
             if (last > 0) {
                 dataVersion = dataVersion.substring(last+1);
             }
-            LOGGER.info("Adding {} to OntologyTermAdder, version {}", dataVersion, ontology.version().orElse("n/a"));
+            LOGGER.info("Adding {} to OntologyTermAdder, version {}, prefix {}",
+                    dataVersion, ontology.version().orElse("n/a"),
+                    prefix);
         } else {
-            LOGGER.info("Adding ontology to OntologyTermAdder {}", ontology.version().orElse("n/a"));
+            LOGGER.info("Adding ontology to OntologyTermAdder {}, prefix {}",
+                    ontology.version().orElse("n/a"),
+                    prefix);
         }
-        rosettaStone = new OntologyRosettaStone(ontology);
+        rosettaStone = new OntologyRosettaStone(ontology, prefix);
         controller.setRosettaStone(rosettaStone);
         TextFields.bindAutoCompletion(controller.getTextField(), rosettaStone.allLabels());
     }

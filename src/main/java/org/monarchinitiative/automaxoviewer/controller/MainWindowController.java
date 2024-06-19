@@ -134,6 +134,7 @@ public class MainWindowController extends BaseController implements Initializabl
      */
     private void loadMaxo(File maxoJsonFile) {
         if (maxoJsonFile != null && maxoJsonFile.isFile()) {
+            LOGGER.info("Loading MAxO from {}", maxoJsonFile.getAbsolutePath());
             Task<MinimalOntology> maxoLoadTask = new Task<>() {
                 @Override
                 protected MinimalOntology call() {
@@ -162,13 +163,15 @@ public class MainWindowController extends BaseController implements Initializabl
 
     private void loadHpo(File hpJsonFilePath) {
         if (hpJsonFilePath != null && hpJsonFilePath.isFile()) {
+            LOGGER.info("Loading HPO from {}", hpJsonFilePath.getAbsolutePath());
             Task<MinimalOntology> hpoLoadTask = new Task<>() {
                 @Override
                 protected MinimalOntology call() {
-                    MinimalOntology hpoOntology = OntologyLoader.loadOntology(hpJsonFilePath);
-                    LOGGER.info("Loaded HPO, version {}", hpoOntology.version().orElse("n/a"));
-                    hpoTermAdder.setOntology(hpOntology.get(), "HPO");
-                    return hpoOntology;
+                    MinimalOntology minOntology = OntologyLoader.loadOntology(hpJsonFilePath);
+                    LOGGER.info("Loaded HPO, version {}", minOntology.version().orElse("n/a"));
+                    hpOntology.set(minOntology);
+                    hpoTermAdder.setOntology(hpOntology.get(), "HP");
+                    return minOntology;
                 }
             };
             hpoLoadTask.setOnSucceeded(e -> {
@@ -187,20 +190,21 @@ public class MainWindowController extends BaseController implements Initializabl
     }
 
     private void loadMondo(File mondoJsonFilePath) {
-        LOGGER.info("Loading mondo from {}.", mondoJsonFilePath.getAbsolutePath());
+        LOGGER.info("Loading MONDO from {}.", mondoJsonFilePath.getAbsolutePath());
         if (mondoJsonFilePath != null && mondoJsonFilePath.isFile()) {
             Task<MinimalOntology> mondoLoadTask = new Task<>() {
                 @Override
                 protected MinimalOntology call() {
-                    MinimalOntology hpoOntology = OntologyLoader.loadOntology(mondoJsonFilePath);
-                    LOGGER.info("Loaded Mondo, version {}", hpoOntology.version().orElse("n/a"));
-                    hpoTermAdder.setOntology(hpOntology.get(), "MONDO");
-                    return hpoOntology;
+                    MinimalOntology minOntology = OntologyLoader.loadOntology(mondoJsonFilePath);
+                    LOGGER.info("Loaded Mondo, version {}", minOntology.version().orElse("n/a"));
+                    mondoOntology.set(minOntology);
+                    mondoTermAdder.setOntology(mondoOntology.get(), "MONDO");
+                    return minOntology;
                 }
             };
             mondoLoadTask.setOnSucceeded(e -> {
                 mondoOntology.set(mondoLoadTask.getValue());
-                mondoTermAdder.setOntology(this.mondoOntology.get(), "MONDO");
+                mondoTermAdder.setOntology(mondoOntology.get(), "MONDO");
             });
             mondoLoadTask.setOnFailed(e -> {
                 LOGGER.warn("Could not load Mondo from {}", mondoJsonFilePath.getAbsolutePath());
@@ -584,7 +588,11 @@ public class MainWindowController extends BaseController implements Initializabl
     public void serializeAutomaxoRowsToFile() {
         Optional<File> opt = model.getAnnotationFile();
         if (opt.isEmpty()) {
-            PopUps.alertDialog("Warning", "Set annotation file prior to seriaqlizing");
+            PopUps.alertDialog("Warning", "Set annotation file prior to serializing");
+        }
+        if (opt.isEmpty()) {
+            PopUps.alertDialog("Error", "Could not set annotation file");
+            return;
         }
         File annotFile = opt.get();
         List<AutoMaxoRow> rows = this.automaxoTableView.getItems();
@@ -664,6 +672,10 @@ public class MainWindowController extends BaseController implements Initializabl
         e.consume();
         System.out.println("create annotation");
        // AutoMaxoRow currentRow = model.getCurrentRow();
+        if (automaxoTableView.getSelectionModel().getSelectedItems().isEmpty()) {
+            LOGGER.warn("Attempt to create annotation with no row being selected");
+            return;
+        }
         AutoMaxoRow currentRow = automaxoTableView.getSelectionModel().getSelectedItems().getFirst();
        annotateAutomaxoRow(currentRow);
     }
@@ -671,17 +683,6 @@ public class MainWindowController extends BaseController implements Initializabl
     @FXML
     public void exportAnnotationFile(ActionEvent actionEvent) {
         LOGGER.info("Exporting POET annotation file");
-        /*List<AutoMaxoRow> autoMaxoRowList = this.automaxoTableView.getItems();
-        List<String> outputrows = new ArrayList<>();
-        String orcid = model.getOrcid().orElse("n/a");
-        for (var amrow : autoMaxoRowList) {
-            System.out.println(amrow.maxoDisplay());
-            if (amrow.getItemStatus().equals(ItemStatus.ANNOTATED)) {
-                outputrows.addAll(amrow.getPoetRows(orcid));
-            }
-        }
-
-         */
         List<PoetOutputRow> porList = new ArrayList<>(outputRowSet);
         Collections.sort(porList);
         List<String> outputrows = new ArrayList<>();

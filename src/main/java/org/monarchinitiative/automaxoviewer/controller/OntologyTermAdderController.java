@@ -58,7 +58,8 @@ public class OntologyTermAdderController implements Initializable {
             }
             Optional<Term> opt = rosettaStone.termFromPrimaryLabel(candidateTermLabel);
             if (opt.isEmpty()) {
-                setInvalid("Not primary label");
+                String errmsg = String.format("\"%s\" is not the primary label", candidateTermLabel);
+                setInvalid(errmsg);
                 return;
             }
             ontologTermLabelProperty.set(opt.get().getName());

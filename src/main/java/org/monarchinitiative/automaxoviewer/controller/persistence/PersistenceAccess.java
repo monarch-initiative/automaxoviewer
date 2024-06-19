@@ -85,13 +85,9 @@ public class PersistenceAccess {
         File hpJsonFile = options.getHpJsonFile();
         if (hpJsonFile != null)
             properties.setProperty(HP_JSON_FILE, hpJsonFile.getAbsolutePath());
-
         File MaxoJsonFile = options.getMaxoJsonFile();
         if (MaxoJsonFile != null)
             properties.setProperty(MAXO_JSON_FILE, MaxoJsonFile.getAbsolutePath());
-        if (options.getOrcid() != null) {
-            properties.setProperty(USER_ORCID, options.getOrcid());
-        }
         File MondoJsonFile = options.getMondoJsonFile();
         if (MondoJsonFile != null)
             properties.setProperty(MONDO_JSON_FILE, MondoJsonFile.getAbsolutePath());

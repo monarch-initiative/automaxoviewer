@@ -133,8 +133,8 @@ public class OptionsWindowController extends BaseController implements Initializ
      */
     public void downloadHpoJson(ActionEvent e) {
         e.consume();
-        File hpo2robotDir = Platform.getAutomaxoDir();
-        Path hpJsonPath = Paths.get(String.valueOf(hpo2robotDir), "hp.json");
+        File automaxoviewerDir = Platform.getAutomaxoDir();
+        Path hpJsonPath = Paths.get(String.valueOf(automaxoviewerDir), "hp.json");
 
         try {
             URL hpoJson = new URL("http://purl.obolibrary.org/obo/hp.json");
@@ -179,8 +179,7 @@ public class OptionsWindowController extends BaseController implements Initializ
     }
 
     public Options getOptions() {
-        Options options =  new Options(hpJsonProperty.get(), maxoJsonProperty.get(), mondoJsonProperty.get(), orcidProperty.get());
-        return options;
+        return new Options(hpJsonProperty.get(), maxoJsonProperty.get(), mondoJsonProperty.get(), orcidProperty.get());
     }
 
 

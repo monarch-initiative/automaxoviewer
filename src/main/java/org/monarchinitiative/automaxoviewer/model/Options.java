@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 /**
  * Stores the current HPO file, ROBOT file, and ORCID identifier of the curator
- * between HPO2ROBOT sessions.
+ * between Automaxoviewer sessions.
  */
 public class Options implements Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Options.class);
@@ -237,6 +237,7 @@ public class Options implements Serializable {
                     case HP_JSON_KEY -> optionsMap.put(HP_JSON_KEY, value);
                     case ORCID_KEY -> optionsMap.put(ORCID_KEY, value);
                     case MAXO_JSON_KEY -> optionsMap.put(MAXO_JSON_KEY, value);
+                    case MONDO_JSON_KEY -> optionsMap.put(MONDO_JSON_KEY, value);
                     default -> {LOGGER.error("Did not recognize option {}:{}", item, value);}
                 }
             }

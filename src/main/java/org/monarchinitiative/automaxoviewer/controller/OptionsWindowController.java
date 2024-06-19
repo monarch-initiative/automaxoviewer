@@ -48,6 +48,8 @@ public class OptionsWindowController extends BaseController implements Initializ
     @FXML
     public Button cancelButton;
     public VBox buttonBox;
+    public Button mondoJsonButton;
+    public Label mondoJsonLabel;
     @FXML
     private Label hpJsonLabel;
     @FXML
@@ -56,6 +58,8 @@ public class OptionsWindowController extends BaseController implements Initializ
     private final StringProperty hpJsonProperty;
 
     private final StringProperty maxoJsonProperty;
+
+    private final StringProperty mondoJsonProperty;
 
     private final StringProperty orcidProperty;
 
@@ -78,6 +82,7 @@ public class OptionsWindowController extends BaseController implements Initializ
         super(viewFactory, fxmlName);
         hpJsonProperty = new SimpleStringProperty(NOT_INITIALIZED);
         maxoJsonProperty = new SimpleStringProperty(NOT_INITIALIZED);
+        mondoJsonProperty = new SimpleStringProperty(NOT_INITIALIZED);
         orcidProperty = new SimpleStringProperty(NOT_INITIALIZED);
         // initialize options that were saved in the $HOME/.hpo2robot.txt file
         Map<String, String> opts = Options.readOptions();
@@ -94,6 +99,7 @@ public class OptionsWindowController extends BaseController implements Initializ
     public void initialize(URL url, ResourceBundle resourceBundle) {
         hpJsonLabel.textProperty().bind(hpJsonProperty);
         maxoJsonLabel.textProperty().bind(maxoJsonProperty);
+        mondoJsonLabel.textProperty().bind(mondoJsonProperty);
         orcidLabel.textProperty().bind(orcidProperty);
         buttonBox.setSpacing(10);
         setupCss();
@@ -116,6 +122,7 @@ public class OptionsWindowController extends BaseController implements Initializ
     private void setupCss() {
         hpJsonButton.setStyle(BUTTON_CSS);
         maxoJsonButton.setStyle(BUTTON_CSS);
+        mondoJsonButton.setStyle(BUTTON_CSS);
         orcidButton.setStyle(BUTTON_CSS);
         okButton.setStyle(BUTTON_CSS);
         cancelButton.setStyle(BUTTON_CSS);
@@ -126,8 +133,8 @@ public class OptionsWindowController extends BaseController implements Initializ
      */
     public void downloadHpoJson(ActionEvent e) {
         e.consume();
-        File hpo2robotDir = Platform.getAutomaxoDir();
-        Path hpJsonPath = Paths.get(String.valueOf(hpo2robotDir), "hp.json");
+        File automaxoviewerDir = Platform.getAutomaxoDir();
+        Path hpJsonPath = Paths.get(String.valueOf(automaxoviewerDir), "hp.json");
 
         try {
             URL hpoJson = new URL("http://purl.obolibrary.org/obo/hp.json");
@@ -139,6 +146,23 @@ public class OptionsWindowController extends BaseController implements Initializ
         }
         // if we get here, download was successful
         hpJsonProperty.set(hpJsonPath.toFile().getAbsolutePath());
+    }
+
+
+    public void downloadMondoJson(ActionEvent e) {
+        e.consume();
+        File hpo2robotDir = Platform.getAutomaxoDir();
+        Path mondoJsonPath = Paths.get(String.valueOf(hpo2robotDir), "mondo.json");
+        try {
+            URL hpoJson = new URL("http://purl.obolibrary.org/obo/mondo.json");
+            FileDownloader downloader = new FileDownloader();
+            downloader.copyURLToFile(hpoJson, mondoJsonPath.toFile());
+        } catch (MalformedURLException ex) {
+            LOGGER.error("Could not download mondo.json: {}", ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+        // if we get here, download was successful
+        mondoJsonProperty.set(mondoJsonPath.toFile().getAbsolutePath());
     }
 
 
@@ -155,8 +179,7 @@ public class OptionsWindowController extends BaseController implements Initializ
     }
 
     public Options getOptions() {
-        Options options =  new Options(hpJsonProperty.get(), maxoJsonProperty.get(), orcidProperty.get());
-        return options;
+        return new Options(hpJsonProperty.get(), maxoJsonProperty.get(), mondoJsonProperty.get(), orcidProperty.get());
     }
 
 

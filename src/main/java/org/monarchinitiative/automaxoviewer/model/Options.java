@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 /**
  * Stores the current HPO file, ROBOT file, and ORCID identifier of the curator
- * between HPO2ROBOT sessions.
+ * between Automaxoviewer sessions.
  */
 public class Options implements Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Options.class);
@@ -40,6 +40,8 @@ public class Options implements Serializable {
 
     private final ObjectProperty<File> maxoJsonFile = new SimpleObjectProperty<>();
 
+    private final ObjectProperty<File> mondoJsonFile = new SimpleObjectProperty<>();
+
     private final StringProperty orcid = new SimpleStringProperty();
 
     private final BooleanBinding isReady;
@@ -55,24 +57,29 @@ public class Options implements Serializable {
         return  (jsonFile.getName().contains(".json"));
     }
 
-    public Options(String hpJsonFile, String maxoJsonFile, String orcid) {
+    public Options(String hpJsonFile, String maxoFile, String mondoFile, String orcid) {
         this();
         if (! isUninitialzedOrValid(hpJsonFile)) {
             throw new PhenolRuntimeException("Malformed hp.json file: " + hpJsonFile);
         }
-        if (! isUninitialzedOrValid(maxoJsonFile)) {
+        if (! isUninitialzedOrValid(maxoFile)) {
             throw new PhenolRuntimeException("Malformed maxo.json file: " + maxoJsonFile);
         }
+        if (! isUninitialzedOrValid(mondoFile)) {
+            throw new PhenolRuntimeException("Malformed mondo.json file: " + maxoJsonFile);
+        }
         this.hpJsonFile.set(new File(hpJsonFile));
-        this.maxoJsonFile.set(new File(maxoJsonFile));
+        this.maxoJsonFile.set(new File(maxoFile));
+        this.mondoJsonFile.set(new File(mondoFile));
         this.orcid.set(orcid);
         LOGGER.info("hp.json: {}", hpJsonFile);
-        LOGGER.info("maxo.json: {}", maxoJsonFile);
+        LOGGER.info("mondo.json: {}", mondoFile);
+        LOGGER.info("maxo.json: {}", maxoFile);
         LOGGER.info("ORCID: {}", orcid);
     }
 
     public Options(){
-        isReady = hpJsonFile.isNotNull().and(maxoJsonFile.isNotNull()).and(orcid.isNotEmpty());
+        isReady = hpJsonFile.isNotNull().and(maxoJsonFile.isNotNull()).and(orcid.isNotEmpty()).and(mondoJsonFile.isNotNull());
     }
 
 
@@ -83,6 +90,18 @@ public class Options implements Serializable {
 
     public void setHpJsonFile(File hpJsonFile) {
         this.hpJsonFile.set(hpJsonFile);
+    }
+
+    public File getMondoJsonFile() {
+        return mondoJsonFile.get();
+    }
+
+    public void setMondoJsonFile(File jsonFile) {
+        this.mondoJsonFile.set(jsonFile);
+    }
+
+    public ObjectProperty<File> mondoJsonFileProperty() {
+        return mondoJsonFile;
     }
 
     public ObjectProperty<File> hpJsonFileProperty() {
@@ -118,6 +137,9 @@ public class Options implements Serializable {
             return false;
         }
         if (maxoJsonFile.get() == null || ! maxoJsonFile.get().isFile()) {
+            return false;
+        }
+        if (mondoJsonFile.get() == null || ! mondoJsonFile.get().isFile()) {
             return false;
         }
         // the last thing to check is if the ORCID matches
@@ -165,31 +187,29 @@ public class Options implements Serializable {
         return matcher.matches();
     }
 
-    private boolean hpJsonFileValid(File hpJsonFile) {
-        if (hpJsonFile == null) return false;
-        if (! hpJsonFile.isFile()) return false;
-        return hpJsonFile.getName().equals("hp.json");
-    }
-
-    private boolean maxoJsonFileValid(File hpJsonFile) {
-        if (hpJsonFile == null) return false;
-        if (! hpJsonFile.isFile()) return false;
-        return hpJsonFile.getName().equals("maxo.json");
+    private boolean jsonFileValid(File jsonFile, String fname) {
+        if (jsonFile == null) return false;
+        if (! jsonFile.isFile()) return false;
+        return jsonFile.getName().equals(fname);
     }
 
     public final static String HP_JSON_KEY = "hp.json.file";
     public final static String MAXO_JSON_KEY = "maxo.json.file";
+    public final static String MONDO_JSON_KEY = "mondo.json.file";
     public final static String ORCID_KEY = "orcid";
 
     public void writeOptions() {
         File file = Platform.getAutoMaxoViewerOptionsFile();
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))){
             bw.write(OPTIONS_HEADER_LINE + "\n");
-            if (hpJsonFileValid(hpJsonFile.get())) {
+            if (jsonFileValid(hpJsonFile.get(),"hp.json")) {
                 bw.write(HP_JSON_KEY + ":" + hpJsonFile.get());
             }
-            if (maxoJsonFileValid(maxoJsonFile.get())) {
+            if (jsonFileValid(maxoJsonFile.get(), "maxo.json")) {
                 bw.write(MAXO_JSON_KEY + ":" + maxoJsonFile.get());
+            }
+            if (jsonFileValid(mondoJsonFile.get(), "mondo.json")) {
+                bw.write(MONDO_JSON_KEY + ":" + mondoJsonFile.get());
             }
             if (validOrcid(orcid.get())) {
                 bw.write(ORCID_KEY + ":" + orcid.get());
@@ -217,6 +237,7 @@ public class Options implements Serializable {
                     case HP_JSON_KEY -> optionsMap.put(HP_JSON_KEY, value);
                     case ORCID_KEY -> optionsMap.put(ORCID_KEY, value);
                     case MAXO_JSON_KEY -> optionsMap.put(MAXO_JSON_KEY, value);
+                    case MONDO_JSON_KEY -> optionsMap.put(MONDO_JSON_KEY, value);
                     default -> {LOGGER.error("Did not recognize option {}:{}", item, value);}
                 }
             }

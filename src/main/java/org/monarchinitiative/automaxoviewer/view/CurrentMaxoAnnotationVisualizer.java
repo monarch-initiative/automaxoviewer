@@ -23,10 +23,10 @@ public class CurrentMaxoAnnotationVisualizer extends MaxoVisualizer {
         StringBuilder builder = new StringBuilder();
         builder.append(HTML_HEADER);
         builder.append(row("HPO ID", item.getHpoId()));
-        builder.append(row("HPO Label", item.getHpoLabel()));
+        builder.append(row("HPO Label", item.getCandidateHpoLabel()));
         builder.append(row("Relation", item.getRelationship()));
         builder.append(row("Maxo ID", item.getMaxoId()));
-        builder.append(row("Maxo Label", item.getMaxoLabel()));
+        builder.append(row("Maxo Label", item.getCandidateMaxoLabel()));
         List<String> ids = new ArrayList<>();
         for (var i : item.getCitationList()) {
             ids.add(i.getPmidTermId().getValue());

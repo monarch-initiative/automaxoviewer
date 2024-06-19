@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
@@ -242,11 +243,40 @@ public class PopUps {
     }
 
 
-    public static Optional<File> selectRobotFileToSave(Window window) {
+
+
+
+    public static Optional<File> selectOrCreateInputFile(Window window, String extensionFile) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("TSV Files", extensionFile)
+        );
+        File selectedFile = fileChooser.showSaveDialog(window);
+        if (selectedFile != null) {
+            if (!selectedFile.exists()) {
+                try {
+                    boolean fileCreated = selectedFile.createNewFile();
+                    if (fileCreated) {
+                        return Optional.of(selectedFile);
+                    } else {
+                        return Optional.empty();
+                    }
+                } catch (IOException  e) {
+                    return Optional.empty();
+                }
+            }
+        } else {
+            PopUps.alertDialog("Error", "Could not select file(name) to save");
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<File> openInputFile(Window stage, String s) {
         final FileChooser filechooser = new FileChooser();
-        filechooser.setInitialFileName("hpo2robot.tsv");
-        filechooser.setTitle("Set path to save HPO2ROBOT file");
-        File f = filechooser.showSaveDialog(window);
+        filechooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        filechooser.setTitle("Open serialized annotation file");
+        File f = filechooser.showOpenDialog(stage);
         return Optional.ofNullable(f);
     }
 }

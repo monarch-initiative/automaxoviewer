@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -63,7 +64,7 @@ public class AutoMaxoItem {
         if (! tidString.contains(":")) {
             tidString = String.format("%s:%s", expectedPrefix, tidString);
         }
-        String fields [] = tidString.split(":");
+        String[] fields = tidString.split(":");
         if (fields.length != 2) {
             LOGGER.error("Malformed ontology term: \"{}\".", tidString);
             return null;
@@ -93,7 +94,7 @@ public class AutoMaxoItem {
         try (BufferedReader br = new BufferedReader(new FileReader(source))) {
            String line;
            while ((line = br.readLine()) != null) {
-               String fields[] = line.split("\t");
+               String[] fields = line.split("\t");
                String pmid = fields[0];
                String subject = fields[1];
                String subjtLabel = fields[2];
@@ -108,5 +109,19 @@ public class AutoMaxoItem {
         return List.of();
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.pmidAsTermId, this.subjectLabel, this.subjectMAxOId);
+    }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof AutoMaxoItem item) {
+            return item.subjectMAxOId.equals(this.subjectMAxOId) &&
+                    item.subjectLabel.equals(this.subjectLabel) &&
+                    item.pmidAsTermId.equals(this.pmidAsTermId);
+        } else {
+            return false;
+        }
+    }
 }

@@ -13,8 +13,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
+import org.monarchinitiative.automaxoviewer.model.OntologyRosettaStone;
+import org.monarchinitiative.phenol.ontology.data.Term;
 
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -39,6 +42,8 @@ public class OntologyTermAdderController implements Initializable {
 
     private final StringProperty ontologTermLabelProperty;
 
+    private OntologyRosettaStone rosettaStone = null;
+
     public OntologyTermAdderController() {
         ontologTermLabelProperty = new SimpleStringProperty();
     }
@@ -46,10 +51,20 @@ public class OntologyTermAdderController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         addButton.setOnAction(e ->{
-            ontologTermLabelProperty.set(textField.getText());
+            String candidateTermLabel = textField.getText();
+            if (rosettaStone == null) {
+                setInvalid("ontology not initialized");
+                return;
+            }
+            Optional<Term> opt = rosettaStone.termFromPrimaryLabel(candidateTermLabel);
+            if (opt.isEmpty()) {
+                String errmsg = String.format("\"%s\" is not the primary label", candidateTermLabel);
+                setInvalid(errmsg);
+                return;
+            }
+            ontologTermLabelProperty.set(opt.get().getName());
             textField.clear();
             setValid(getErrorLabel());
-            ontologyTermErrorLabel.setText(getErrorLabel());
         });
         addButton.setStyle("-fx-spacing: 10;");
         Font largeFont = Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18);
@@ -60,11 +75,17 @@ public class OntologyTermAdderController implements Initializable {
 
     public void setInvalid() {
         ontologyTermErrorLabel.setTextFill(Color.RED);
-        ontologyTermErrorLabel.setText("Enter at least one parent term");
+        ontologyTermErrorLabel.setText("Use autocomplete to enter an ontology term");
         textField.setStyle("-fx-text-box-border: red; -fx-focus-color: red ;");
     }
 
-    private void setValid(String msg) {
+    public void setInvalid(String msg) {
+        ontologyTermErrorLabel.setTextFill(Color.RED);
+        ontologyTermErrorLabel.setText(msg);
+        textField.setStyle("-fx-text-box-border: red; -fx-focus-color: red ;");
+    }
+
+    public void setValid(String msg) {
         ontologyTermErrorLabel.setTextFill(Color.BLACK);
         ontologyTermErrorLabel.setText(msg);
         textField.setStyle("-fx-text-box-border: green; -fx-focus-color: green ;");
@@ -110,9 +131,17 @@ public class OntologyTermAdderController implements Initializable {
         this.ontologyTermLabel.setText(label);
     }
 
-    public void setOntologyLabelCandidate(String label) {
-       this.textField.setText(label);
+    public void setValidOntologyLabel(String label) {
+        this.textField.setText(label);
+        setValid(label);
+    }
+    public void setInValidOntologyLabel(String label) {
+        this.textField.setText(label);
+        setInvalid();
     }
 
 
+    public void setRosettaStone(OntologyRosettaStone rosettaStone) {
+        this.rosettaStone = rosettaStone;
+    }
 }

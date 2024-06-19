@@ -2,22 +2,40 @@ package org.monarchinitiative.automaxoviewer.json;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AutomaxoJsonText {
+public class AutomaxoJsonTest {
 
+    @Test
+    public void testImport() {
+        String input = "/Users/robin/GIT/automaxo/data/stickler_syndrome/detailed_post_ontoGPT.json";
+        File automaxoFile = new File(input);
+        AutomaxoJson automaxo = null;
+        if (automaxoFile != null && automaxoFile.isFile()) {
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                automaxo = objectMapper.readValue(automaxoFile, AutomaxoJson.class);
+
+            } catch (Exception exc) {
+                exc.printStackTrace();
+            }
+        }
+        Assertions.assertNotNull(automaxo);
+    }
 
     @Test
     public void whenSerializingUsingJsonPropertyOrder_thenCorrect()
             throws IOException {
         ObjectMapper mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        InputStream is = AutomaxoJsonText.class.getClassLoader().getResourceAsStream("triplet1.json");
+        InputStream is = AutomaxoJsonTest.class.getClassLoader().getResourceAsStream("triplet1.json");
         TripletItem tripletItem1 = mapper.readValue(is, TripletItem.class);
         assertNotNull(tripletItem1);
         assertEquals(1, tripletItem1.getCount());
@@ -33,7 +51,7 @@ public class AutomaxoJsonText {
             throws IOException {
         ObjectMapper mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        InputStream is = AutomaxoJsonText.class.getClassLoader().getResourceAsStream("triplet9.json");
+        InputStream is = AutomaxoJsonTest.class.getClassLoader().getResourceAsStream("triplet9.json");
         TripletItem tripletItem9 = mapper.readValue(is, TripletItem.class);
         assertNotNull(tripletItem9);
         assertEquals(9, tripletItem9.getCount());
@@ -49,7 +67,7 @@ public class AutomaxoJsonText {
             throws IOException {
         ObjectMapper mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        InputStream is = AutomaxoJsonText.class.getClassLoader().getResourceAsStream("threeTriplets.json");
+        InputStream is = AutomaxoJsonTest.class.getClassLoader().getResourceAsStream("threeTriplets.json");
         AutomaxoJson automax = mapper.readValue(is, AutomaxoJson.class);
         TripletItem[] tripletItemList = automax.getTriplets();
         assertEquals(3, tripletItemList.length);

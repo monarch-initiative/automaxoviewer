@@ -3,14 +3,18 @@ package org.monarchinitiative.automaxoviewer.model;
 import org.monarchinitiative.automaxoviewer.json.PubMedSource;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Map;
 
-public class PubMedCitation {
+public class PubMedCitation implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
-    private String title;
-    private String abstractText;
-    private TermId pmidTermId;
-    private Map<String, String> meshInfo;
+    private final String title;
+    private final String abstractText;
+    private final TermId pmidTermId;
+    private final Map<String, String> meshInfo;
 
     public PubMedCitation(String pmid, PubMedSource source) {
         if (pmid.startsWith("PMID:")) {
@@ -18,8 +22,8 @@ public class PubMedCitation {
         } else {
             pmidTermId = TermId.of(String.format("PMID:%s", pmid));
         }
-        title = source.getText();
-        abstractText = source.getText();
+        title = source.getTitle();
+        abstractText = source.getAbstract();
         meshInfo = source.getMesh_info();
     }
 

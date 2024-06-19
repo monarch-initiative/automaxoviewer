@@ -1,5 +1,8 @@
 package org.monarchinitiative.automaxoviewer.model;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 public enum MaxoRelation {
 
     TREATS("treats"),
@@ -19,4 +22,11 @@ public enum MaxoRelation {
     public String toString() {
         return label;
     }
+
+
+    public static Optional<MaxoRelation> fromString(String candidate) {
+        return Arrays.stream(MaxoRelation.values()).filter(r -> r.toString().equals(candidate)).findAny();
+    }
+
+
 }

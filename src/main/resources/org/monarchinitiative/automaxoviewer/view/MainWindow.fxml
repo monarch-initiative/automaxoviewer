@@ -68,7 +68,7 @@
                 <OntologyTermAdder fx:id="hpoTermAdder"/>
                 <HBox><ChoiceBox fx:id="relationCB"/>
                     <Label>"Disease level?"</Label>
-                    <CheckBox fx:id="diseaseLevelAnnotationCheckBox"/>
+                    <CheckBox fx:id="diseaseLevelAnnotCheckBox"/>
                 </HBox>
                 <Button fx:id="nextAbstractButton" onAction="#viewNextAbstract" text="View next abstract">
                     <HBox.margin>

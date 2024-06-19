@@ -46,7 +46,6 @@ public class AutoMaxoRow implements Serializable {
     /** This term is used for disease-level annotations */
     private final static Term PHENOTYPIC_ABNORMALITY = Term.of(TermId.of("HP:0000118"), "Phenotypic abnormality");
 
-
     private final ObjectProperty<ItemStatus> itemStatus;
     private final ObjectProperty<Term> mondoProperty;
     private final ObjectProperty<Term> maxoProperty;
@@ -81,7 +80,6 @@ public class AutoMaxoRow implements Serializable {
     private final String hpoExtension;
     private final int count;
     private final List<PubMedCitation> citationList;
-
 
     public AutoMaxoRow(TripletItem item) {
        this.maxoId = item.getTriplet().getMaxo().toUpperCase();
@@ -261,7 +259,7 @@ public class AutoMaxoRow implements Serializable {
     }
 
     public boolean isAnnotated() {
-        return this.itemStatus.equals(ItemStatus.ANNOTATED);
+        return this.itemStatus.get().equals(ItemStatus.ANNOTATED);
     }
 
     public Optional<Term> mondoTerm() {
@@ -370,7 +368,7 @@ public class AutoMaxoRow implements Serializable {
             PopUps.alertDialog("error","MAXO Term not initialized, cannot annotate");
             return rows;
         }
-        if (hpoProperty.get() == null){
+        if (hpoProperty.get() == null && ! diseaseLevelProperty.get()){
             PopUps.alertDialog("error","HPO Term not initialized, cannot annotate");
             return rows;
         }
@@ -420,4 +418,7 @@ public class AutoMaxoRow implements Serializable {
         }
     }
 
+    public void setDiseaseLevel(boolean diseaseLevel) {
+        diseaseLevelProperty.set(diseaseLevel);
+    }
 }

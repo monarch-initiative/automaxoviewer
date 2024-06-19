@@ -84,9 +84,14 @@ public class PmidAbstractTextVisualizer extends MaxoVisualizer  {
         count = count % N;
         builder.append(para(item, count));
         PubMedCitation cite = citations.get(count);
+        builder.append(getTitle(cite));
         builder.append(getMarkedUpText(cite.getAbstractText(), vis.getHpoString(), vis.getMaxoString()));
         builder.append(HTML_FOOT);
         return builder.toString();
+    }
+
+    private String getTitle(PubMedCitation cite) {
+        return String.format("<h3>%s (%s)</h3>\n", cite.getTitle(), cite.getPmidTermId().getValue());
     }
 
     public String toHTML(AutoMaxoRow currentRow, int n) {

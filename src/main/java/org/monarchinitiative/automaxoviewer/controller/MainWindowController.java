@@ -66,7 +66,7 @@ public class MainWindowController extends BaseController implements Initializabl
     @FXML
     public ChoiceBox<MaxoRelation> relationCB;
     @FXML
-    public CheckBox diseaseLevelAnnotationCheckBBox;
+    public CheckBox diseaseLevelAnnotCheckBox;
     @FXML
     public Button nextAbstractButton;
     @FXML
@@ -278,6 +278,7 @@ public class MainWindowController extends BaseController implements Initializabl
     private void clearFields() {
         hpoTermAdder.clearFields();
         maxoTermAdder.clearFields();
+        diseaseLevelAnnotCheckBox.setSelected(false);
         /* Don't clear Mondo -- we want to leave the correct disease */
     }
 
@@ -389,8 +390,8 @@ public class MainWindowController extends BaseController implements Initializabl
 
         automaxoTableView.setOnMouseClicked(e -> {
             AutoMaxoRow item = automaxoTableView.getSelectionModel().getSelectedItems().getFirst();
-            showRowInDetail(item);
             model.setCurrentRow(item);
+            showRowInDetail(item);
         });
 
     }
@@ -407,7 +408,13 @@ public class MainWindowController extends BaseController implements Initializabl
         }
         this.maxoTermAdder.setOntologyLabelCandidate(label);
         String relation = item.getRelationship();
-
+        Optional<MaxoRelation> opt = MaxoRelation.fromString(relation);
+        if (opt.isPresent()) {
+            this.relationCB.setValue(opt.get());
+        } else {
+            this.relationCB.setValue(MaxoRelation.UNKNOWN);
+        }
+        viewCurrentItem(model);
     }
 
     /**
@@ -633,6 +640,7 @@ public class MainWindowController extends BaseController implements Initializabl
 
 
     private void annotateAutomaxoRow(AutoMaxoRow currentRow) {
+        boolean diseaseLevel = this.diseaseLevelAnnotCheckBox.isSelected();
         Optional<Term> hpoTermOpt = this.hpoTermAdder.getTermIfValid();
         Optional<Term> maxoTermOpt = this.maxoTermAdder.getTermIfValid();
         Optional<Term> mondoTermOpt = this.mondoTermAdder.getTermIfValid();
@@ -640,8 +648,8 @@ public class MainWindowController extends BaseController implements Initializabl
             PopUps.alertDialog("Error", "Cannot add annotation unless MONDO term is valid (green border)");
             return;
         }
-        if (hpoTermOpt.isEmpty()) {
-            PopUps.alertDialog("Error", "Cannot add annotation unless HPO term is valid (green border)");
+        if (hpoTermOpt.isEmpty() && ! diseaseLevel) {
+            PopUps.alertDialog("Error", "Cannot add annotation unless HPO term is valid (green border) or diseaseLevel is selected");
             return;
         }
         if (maxoTermOpt.isEmpty()) {
@@ -649,14 +657,18 @@ public class MainWindowController extends BaseController implements Initializabl
             return;
         }
         MaxoRelation relation = this.relationCB.getValue();
-
         Term mondoTerm = mondoTermOpt.get();
-        Term hpoTerm = hpoTermOpt.get();
         Term maxoTerm = maxoTermOpt.get();
         currentRow.setItemStatus(ItemStatus.ANNOTATED);
         currentRow.setMaxo(maxoTerm);
-        currentRow.setHpo(hpoTerm);
+        if (diseaseLevel) {
+            currentRow.setDiseaseLevel(true);
+        } else {
+            Term hpoTerm = hpoTermOpt.get();
+            currentRow.setHpo(hpoTerm);
+        }
         currentRow.setDiseaseTerm(mondoTerm);
+        currentRow.setDiseaseLevel(diseaseLevel);
         currentRow.setMaxoRelation(relation);
         String orcid = model.getOrcid().orElse("n/a");
         outputRowSet.addAll(currentRow.getPoetRows(orcid));

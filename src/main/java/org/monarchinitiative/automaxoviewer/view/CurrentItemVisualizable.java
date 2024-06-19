@@ -75,4 +75,6 @@ public class CurrentItemVisualizable {
     public AutoMaxoRow getItem() {
         return item;
     }
+
+
 }

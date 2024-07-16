@@ -547,19 +547,21 @@ public class MainWindowController extends BaseController implements Initializabl
     public void viewCurrentItem(Model model) {
         AutoMaxoRow currentRow = model.getCurrentRow();
         WebEngine engine = this.currentAutoMaxoWebView.getEngine();
-        Optional<Integer> opt = model.getNextAbstractCount();
+        Optional<Integer> nextAbstractCountOpt = model.getNextAbstractCount();
         var visualizer = new PmidAbstractTextVisualizer();
         String html;
-        if (opt.isEmpty()) {
+        if (nextAbstractCountOpt.isEmpty()) {
             html = visualizer.getHtmlNoAbstract();
             engine.loadContent(html);
             return;
         }
+        // The following is the index of the citation (PMID) we are viewing.
+        int nextAbstractCount = nextAbstractCountOpt.get();
         Optional<Term> optHpo = this.hpoTermAdder.getTermIfValid();
         Term hpo = optHpo.orElse(null);
         Optional<Term> optMaxo = this.maxoTermAdder.getTermIfValid();
         Term maxo = optMaxo.orElse(null);
-        int totalAnnotationsToDate = 42;
+
         Optional<File> optAnnotFile = model.getAnnotationFile();
         String annotationFile;
         annotationFile = optAnnotFile.map(File::getAbsolutePath).orElse("n/a");
@@ -572,22 +574,31 @@ public class MainWindowController extends BaseController implements Initializabl
                 hpo,
                 maxo,
                 mondo,
-                totalAnnotationsToDate,
+                model.getTotalAnnotationsToDate(),
                 annotationFile,
                 inputFile);
-        html = visualizer.toHTML(visualisable, opt.get());
+        html = visualizer.toHTML(visualisable, nextAbstractCount);
         engine.loadContent(html);
     }
 
     @FXML
-    public void openAnnotationFile(ActionEvent e) {
+    public void openAbstractInPubMed(ActionEvent e) {
         e.consume();
-        Window stage = this.relationCB.getScene().getWindow();
-        Optional<File> opt = PopUps.openInputFile(stage, "*.ser");
+        Optional<String> opt = model.getCurrentPmid();
+        final String urlPart = "https://pubmed.ncbi.nlm.nih.gov/";
         if (opt.isPresent()) {
-            File annotFile = opt.get();
-            model.setAnnotationFile(annotFile);
-            deserializeAutomaxoRowsToFile(annotFile);
+            String url = urlPart + opt.get();
+            LOGGER.trace("Opening PMID at {}", url);
+            try {
+                if (viewFactory.getHostervicesOpt().isPresent()) {
+                    var services = viewFactory.getHostervicesOpt().get();
+                    services.showDocument(url);
+                } else {
+                   LOGGER.error("Could not retrieve host services to open PMID");
+                }
+            } catch (InternalError ee) {
+                LOGGER.error("Error opening system browser to show PMID {}", ee.getMessage());
+            }
         }
     }
 

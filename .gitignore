@@ -23,3 +23,5 @@
 hs_err_pid*
 replay_pid*
 /pom.xml.versionsBackup
+/automaxoviewer-1.0.0.dmg
+/dependency-reduced-pom.xml

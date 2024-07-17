@@ -377,11 +377,11 @@ public class AutoMaxoRow implements Serializable {
             if (diseaseLevelProperty.get()) {
                 hpoT = PHENOTYPIC_ABNORMALITY; // "disease-level annotation"
             } else {
-                hpoT = hpoTerm().get();
+                hpoT = hpoTerm().orElseThrow();
             }
-            var row = new PoetOutputRow(mondoTerm().get(),
+            var row = new PoetOutputRow(mondoTerm().orElseThrow(),
                     pmid,
-                    maxoTerm().get(),
+                    maxoTerm().orElseThrow(),
                     hpoT,
                     maxoRelationProperty.get(),
                     orcid);

@@ -63,16 +63,22 @@
                             <Insets bottom="10.0" left="10.0" right="10.0" top="20.0"/>
                         </HBox.margin>
                     </Button>
-                    <Button fx:id="nextAbstractButton" onAction="#viewNextAbstract" text="View next abstract">
-                        <HBox.margin>
-                            <Insets bottom="10.0" left="10.0" right="10.0" top="20.0"/>
-                        </HBox.margin>
-                    </Button>
                     <Button mnemonicParsing="false" onAction="#exportAnnotationFile" text="Export Annotation File">
                         <HBox.margin>
                             <Insets bottom="10.0" left="10.0" right="10.0" top="20.0"/>
                         </HBox.margin>
                     </Button>
+                    <Button fx:id="nextAbstractButton" onAction="#viewNextAbstract" text="View next abstract">
+                        <HBox.margin>
+                            <Insets bottom="10.0" left="10.0" right="10.0" top="20.0"/>
+                        </HBox.margin>
+                    </Button>
+                    <Button onAction="#createAnnot" text="Create annotation" >
+                        <HBox.margin>
+                            <Insets bottom="10.0" left="10.0" right="10.0" top="20.0"/>
+                        </HBox.margin>
+                    </Button>
+
                 </HBox>
                 <OntologyTermAdder fx:id="mondoTermAdder"/>
                 <OntologyTermAdder fx:id="maxoTermAdder"/>
@@ -83,10 +89,7 @@
                     <CheckBox fx:id="diseaseLevelAnnotCheckBox"/>
                 </HBox>
 
-                <Button onAction="#createAnnot" text="Create annotation" >
-                    <HBox.margin>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="20.0"/>
-                    </HBox.margin></Button>
+
             </VBox>
 
                 <WebView fx:id="currentAutoMaxoWebView" />

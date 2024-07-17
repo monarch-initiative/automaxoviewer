@@ -24,10 +24,6 @@ public class Model {
 
     private Options options = null;
 
-    private MaxoAnnotation currentAnnotation;
-
-    private List<MaxoAnnotation> annotationList;
-
     private AutoMaxoRow currentRow = null;
 
     private int currentAbstractCount;
@@ -35,8 +31,6 @@ public class Model {
     private int totalAnnotationsToDate;
 
     public Model() {
-        currentAnnotation = new MaxoAnnotation();
-        annotationList = new ArrayList<>();
         totalAnnotationsToDate = 0;
     }
 

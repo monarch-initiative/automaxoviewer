@@ -53,6 +53,9 @@ public class MainWindowController extends BaseController implements Initializabl
     private final ObjectProperty<MinimalOntology> maxoOntology = new SimpleObjectProperty<>();
     private final ObjectProperty<MinimalOntology> mondoOntology = new SimpleObjectProperty<>();
 
+    private final static String ANNOTATED_COLOR = "-fx-background-color: #baffba;";
+    private final static String CANNOT_ANNOTATE_COLOR = "-fx-background-color: #ffd7d1;";
+
     @FXML
     public MenuItem newMenuItem;
     @FXML
@@ -286,8 +289,7 @@ public class MainWindowController extends BaseController implements Initializabl
 
 
     private void setUpTableView() {
-        final String ANNOTATED_COLOR = "-fx-background-color: #baffba;";
-        final String CANNOT_ANNOTATE_COLOR = "-fx-background-color: #ffd7d1;";
+
         Image successImage = null;
         Image failImage = null;
         try {
@@ -638,16 +640,7 @@ public class MainWindowController extends BaseController implements Initializabl
     }
 
 
-    public void saveAnnotationFile(ActionEvent e) {
-        e.consume();
-        Window stage = this.relationCB.getScene().getWindow();
-        Optional<File> opt = PopUps.selectOrCreateInputFile(stage, "*.ser");
-        if (opt.isPresent()) {
-            File annotFile = opt.get();
-            model.setAnnotationFile(annotFile);
-            serializeAutomaxoRowsToFile();
-        }
-    }
+
 
 
     private void annotateAutomaxoRow(AutoMaxoRow currentRow) {
@@ -714,7 +707,7 @@ public class MainWindowController extends BaseController implements Initializabl
             outputrows.add(row.geTsvLine());
         }
 
-        Optional<Window> opt =   Stage.getWindows().stream().filter(Window::isShowing).findAny();
+        Optional<Window> opt = Stage.getWindows().stream().filter(Window::isShowing).findAny();
         Stage stage;
         stage = (Stage) opt.orElse(null);
         String home = System.getProperty("user.home");

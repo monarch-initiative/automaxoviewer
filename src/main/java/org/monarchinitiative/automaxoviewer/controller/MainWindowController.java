@@ -709,6 +709,7 @@ public class MainWindowController extends BaseController implements Initializabl
         List<PoetOutputRow> porList = new ArrayList<>(outputRowSet);
         Collections.sort(porList);
         List<String> outputrows = new ArrayList<>();
+        outputrows.add(PoetOutputRow.getHeader());
         for (var row : porList) {
             outputrows.add(row.geTsvLine());
         }

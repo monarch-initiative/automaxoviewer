@@ -60,7 +60,9 @@ public class AutoMaxoRow implements Serializable {
     private String extension_name = null;
     /** If true, the medical action is for the entire disease rather than for a specific feature (HPO term). */
     private final Set<String> approvedPmidSet;
-
+    private boolean isProcessed;
+    private boolean isUnprocessable;
+    private boolean pmidProcessed;
 
     private final String maxoId;
     private final String candidateMaxoLabel;
@@ -195,6 +197,8 @@ public class AutoMaxoRow implements Serializable {
     public int getCount() {
         return count;
     }
+
+
 
 
     public List<PubMedCitation> getCitationList() {
@@ -418,7 +422,33 @@ public class AutoMaxoRow implements Serializable {
         }
     }
 
+
+    public boolean isProcessed() {
+        return isProcessed;
+    }
+
+    public void setProcessed(boolean processed) {
+        isProcessed = processed;
+    }
+
+    public boolean isUnprocessable() {
+        return isUnprocessable;
+    }
+
+    public void setUnprocessable() {
+        isUnprocessable = true;
+    }
+
     public void setDiseaseLevel(boolean diseaseLevel) {
         diseaseLevelProperty.set(diseaseLevel);
+    }
+
+    public void setPmidProcessed() {
+        if (isProcessed  || isUnprocessable) return;
+        else pmidProcessed = true;
+    }
+
+    public boolean pmidProcessed(){
+        return pmidProcessed;
     }
 }

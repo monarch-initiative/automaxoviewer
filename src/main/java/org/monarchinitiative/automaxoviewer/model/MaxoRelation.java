@@ -6,7 +6,7 @@ import java.util.Optional;
 public enum MaxoRelation {
 
     TREATS("treats"),
-    PREVENTS("disabled"),
+    PREVENTS("prevents"),
     INVESTIGATES("investigates"),
     CONTRAINDICATED("contraindicated"),
     LACK_OF_OBSERVED_RESPONSE("lack of observed response"),

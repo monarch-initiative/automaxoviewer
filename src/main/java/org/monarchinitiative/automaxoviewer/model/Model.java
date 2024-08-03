@@ -24,17 +24,14 @@ public class Model {
 
     private Options options = null;
 
-    private MaxoAnnotation currentAnnotation;
-
-    private List<MaxoAnnotation> annotationList;
-
     private AutoMaxoRow currentRow = null;
 
     private int currentAbstractCount;
 
+    private int totalAnnotationsToDate;
+
     public Model() {
-        currentAnnotation = new MaxoAnnotation();
-        annotationList = new ArrayList<>();
+        totalAnnotationsToDate = 0;
     }
 
     public void setTripletItemList(AutomaxoJson automaxoJson) {
@@ -69,6 +66,20 @@ public class Model {
         return Optional.of(c);
     }
 
+    public Optional<String> getCurrentPmid() {
+        if (currentRow == null) {
+            return Optional.empty();
+        }
+        List<PubMedCitation> cites = currentRow.getCitationList();
+        if (cites.size()<= currentAbstractCount) {
+            LOGGER.error("currentAbstractCount over boundary");
+        }
+        PubMedCitation pmc = cites.get(currentAbstractCount);
+        return Optional.of(pmc.getPmidTermId().getId());
+    }
+
+
+
     public AutoMaxoRow getCurrentRow() {
         return currentRow;
     }
@@ -93,5 +104,9 @@ public class Model {
     public Optional<String> getOrcid() {
         if (options == null) return Optional.empty();
         else return Optional.of(options.getOrcid());
+    }
+
+    public int getTotalAnnotationsToDate() {
+        return totalAnnotationsToDate;
     }
 }

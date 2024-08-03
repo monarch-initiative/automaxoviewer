@@ -35,6 +35,7 @@ import org.monarchinitiative.automaxoviewer.view.ViewFactory;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
 import org.monarchinitiative.phenol.ontology.data.Term;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +46,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainWindowController extends BaseController implements Initializable {
     private final Logger LOGGER = LoggerFactory.getLogger(MainWindowController.class);
@@ -52,6 +54,9 @@ public class MainWindowController extends BaseController implements Initializabl
     private final ObjectProperty<MinimalOntology> hpOntology = new SimpleObjectProperty<>();
     private final ObjectProperty<MinimalOntology> maxoOntology = new SimpleObjectProperty<>();
     private final ObjectProperty<MinimalOntology> mondoOntology = new SimpleObjectProperty<>();
+
+    private final static String ANNOTATED_COLOR = "-fx-background-color: #baffba;";
+    private final static String CANNOT_ANNOTATE_COLOR = "-fx-background-color: #ffd7d1;";
 
     @FXML
     public MenuItem newMenuItem;
@@ -286,8 +291,7 @@ public class MainWindowController extends BaseController implements Initializabl
 
 
     private void setUpTableView() {
-        final String ANNOTATED_COLOR = "-fx-background-color: #baffba;";
-        final String CANNOT_ANNOTATE_COLOR = "-fx-background-color: #ffd7d1;";
+
         Image successImage = null;
         Image failImage = null;
         try {
@@ -360,6 +364,7 @@ public class MainWindowController extends BaseController implements Initializabl
                                 AutoMaxoRow item = cell.getTableRow().getItem();
                                 item.setItemStatus(ItemStatus.CANNOT_ANNOTATE);
                                 TableRow<AutoMaxoRow> currentRow = cell.getTableRow();
+                                item.setUnprocessable();
                                 currentRow.setStyle(CANNOT_ANNOTATE_COLOR);
                             });
                             cellMenu.getItems().addAll(ghMenuItem, summaryMenuItem, markedFinishedMenuItem);
@@ -392,6 +397,25 @@ public class MainWindowController extends BaseController implements Initializabl
             AutoMaxoRow item = automaxoTableView.getSelectionModel().getSelectedItems().getFirst();
             model.setCurrentRow(item);
             showRowInDetail(item);
+        });
+
+        // Set custom row factory to apply CSS style
+        automaxoTableView.setRowFactory(tv -> new TableRow<AutoMaxoRow>() {
+            @Override
+            protected void updateItem(AutoMaxoRow amrow, boolean empty) {
+                super.updateItem(amrow, empty);
+                if (amrow == null || empty) {
+                    setStyle("");
+                } else if (amrow.isProcessed()) {
+                    setStyle("-fx-background-color: lightgreen;");
+                } else if (amrow.isUnprocessable()) {
+                    setStyle("-fx-background-color: red;");
+                } else if (amrow.pmidProcessed()) {
+                    setStyle("-fx-background-color: powderblue;");
+                } else {
+                    setStyle("");
+                }
+            }
         });
 
     }
@@ -547,19 +571,21 @@ public class MainWindowController extends BaseController implements Initializabl
     public void viewCurrentItem(Model model) {
         AutoMaxoRow currentRow = model.getCurrentRow();
         WebEngine engine = this.currentAutoMaxoWebView.getEngine();
-        Optional<Integer> opt = model.getNextAbstractCount();
+        Optional<Integer> nextAbstractCountOpt = model.getNextAbstractCount();
         var visualizer = new PmidAbstractTextVisualizer();
         String html;
-        if (opt.isEmpty()) {
+        if (nextAbstractCountOpt.isEmpty()) {
             html = visualizer.getHtmlNoAbstract();
             engine.loadContent(html);
             return;
         }
+        // The following is the index of the citation (PMID) we are viewing.
+        int nextAbstractCount = nextAbstractCountOpt.get();
         Optional<Term> optHpo = this.hpoTermAdder.getTermIfValid();
         Term hpo = optHpo.orElse(null);
         Optional<Term> optMaxo = this.maxoTermAdder.getTermIfValid();
         Term maxo = optMaxo.orElse(null);
-        int totalAnnotationsToDate = 42;
+
         Optional<File> optAnnotFile = model.getAnnotationFile();
         String annotationFile;
         annotationFile = optAnnotFile.map(File::getAbsolutePath).orElse("n/a");
@@ -572,89 +598,57 @@ public class MainWindowController extends BaseController implements Initializabl
                 hpo,
                 maxo,
                 mondo,
-                totalAnnotationsToDate,
+                model.getTotalAnnotationsToDate(),
                 annotationFile,
                 inputFile);
-        html = visualizer.toHTML(visualisable, opt.get());
+        html = visualizer.toHTML(visualisable, nextAbstractCount);
         engine.loadContent(html);
     }
 
     @FXML
-    public void openAnnotationFile(ActionEvent e) {
+    public void openAbstractInPubMed(ActionEvent e) {
         e.consume();
-        Window stage = this.relationCB.getScene().getWindow();
-        Optional<File> opt = PopUps.openInputFile(stage, "*.ser");
+        Optional<String> opt = model.getCurrentPmid();
+        final String urlPart = "https://pubmed.ncbi.nlm.nih.gov/";
         if (opt.isPresent()) {
-            File annotFile = opt.get();
-            model.setAnnotationFile(annotFile);
-            deserializeAutomaxoRowsToFile(annotFile);
+            String url = urlPart + opt.get();
+            LOGGER.trace("Opening PMID at {}", url);
+            try {
+                if (viewFactory.getHostervicesOpt().isPresent()) {
+                    var services = viewFactory.getHostervicesOpt().get();
+                    services.showDocument(url);
+                } else {
+                   LOGGER.error("Could not retrieve host services to open PMID");
+                }
+            } catch (InternalError ee) {
+                LOGGER.error("Error opening system browser to show PMID {}", ee.getMessage());
+            }
         }
     }
 
 
-    public void serializeAutomaxoRowsToFile() {
-        Optional<File> opt = model.getAnnotationFile();
-        if (opt.isEmpty()) {
-            PopUps.alertDialog("Warning", "Set annotation file prior to serializing");
-        }
-        if (opt.isEmpty()) {
-            PopUps.alertDialog("Error", "Could not set annotation file");
-            return;
-        }
-        File annotFile = opt.get();
-        List<AutoMaxoRow> rows = this.automaxoTableView.getItems();
-        try (FileOutputStream fileOut = new FileOutputStream(annotFile);
-             ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
-            out.writeObject(rows);
-            LOGGER.info("Serialized data is saved in {}", annotFile.getAbsolutePath());
-        } catch (IOException i) {
-            LOGGER.error(i.getMessage());
-        }
-    }
-
-    public void deserializeAutomaxoRowsToFile(File file) {
-        try (FileInputStream fileIn = new FileInputStream(file);
-             ObjectInputStream in = new ObjectInputStream(fileIn)) {
-            List<AutoMaxoRow> autoMaxoRows = (List<AutoMaxoRow>) in.readObject();
-            this.automaxoTableView.getItems().clear();
-            ObservableList<AutoMaxoRow> list = FXCollections.observableArrayList();
-            list.addAll(autoMaxoRows);
-            this.automaxoTableView.setItems(list);
-            LOGGER.info("Deserialized autoMaxoRows n={}", autoMaxoRows.size());
-        } catch (IOException | ClassNotFoundException e) {
-            LOGGER.error(e.getMessage());
-        }
-    }
 
 
-    public void saveAnnotationFile(ActionEvent e) {
-        e.consume();
-        Window stage = this.relationCB.getScene().getWindow();
-        Optional<File> opt = PopUps.selectOrCreateInputFile(stage, "*.ser");
-        if (opt.isPresent()) {
-            File annotFile = opt.get();
-            model.setAnnotationFile(annotFile);
-            serializeAutomaxoRowsToFile();
-        }
-    }
 
 
-    private void annotateAutomaxoRow(AutoMaxoRow currentRow) {
+
+
+    private boolean annotateAutomaxoRow(AutoMaxoRow currentRow) {
         boolean diseaseLevel = this.diseaseLevelAnnotCheckBox.isSelected();
         Optional<Term> hpoTermOpt = this.hpoTermAdder.getTermIfValid();
         Optional<Term> maxoTermOpt = this.maxoTermAdder.getTermIfValid();
         Optional<Term> mondoTermOpt = this.mondoTermAdder.getTermIfValid();
         if (mondoTermOpt.isEmpty()) {
             PopUps.alertDialog("Error", "Cannot add annotation unless MONDO term is valid (green border)");
-            return;
+            return false;
         }
         if (hpoTermOpt.isEmpty() && ! diseaseLevel) {
             PopUps.alertDialog("Error", "Cannot add annotation unless HPO term is valid (green border) or diseaseLevel is selected");
-            return;
+            return false;
         }
         if (maxoTermOpt.isEmpty()) {
             PopUps.alertDialog("Error", "Cannot add annotation unless Maxo term is valid (green border)");
-            return;
+            return false;
         }
         MaxoRelation relation = this.relationCB.getValue();
         Term mondoTerm = mondoTermOpt.get();
@@ -676,20 +670,37 @@ public class MainWindowController extends BaseController implements Initializabl
         long count = automaxoTableView.getItems().stream().filter(AutoMaxoRow::isAnnotated).count();
         LOGGER.info("Current row status {}", currentRow.getItemStatus());
         LOGGER.info("Total annotated items {}", count);
+        currentRow.setProcessed(true);
+        setAnnotatedPmid(currentRow);
         clearFields();
+        return true;
+    }
+
+
+    public void setAnnotatedPmid(AutoMaxoRow row) {
+        List<PubMedCitation> citations = row.getCitationList();
+        Set<TermId> allCitedPmids = citations.stream().map(PubMedCitation::getPmidTermId).collect(Collectors.toSet());
+        for (AutoMaxoRow arow : this.automaxoTableView.getItems()) {
+            var rowcites = arow.getCitationList().stream().map(PubMedCitation::getPmidTermId).toList();
+            for (TermId termId : rowcites) {
+                if (allCitedPmids.contains(termId)) {
+                    arow.setPmidProcessed();
+                }
+            }
+        }
     }
 
 
     public void createAnnot(ActionEvent e) {
         e.consume();
         System.out.println("create annotation");
-       // AutoMaxoRow currentRow = model.getCurrentRow();
         if (automaxoTableView.getSelectionModel().getSelectedItems().isEmpty()) {
             LOGGER.warn("Attempt to create annotation with no row being selected");
             return;
         }
-        AutoMaxoRow currentRow = automaxoTableView.getSelectionModel().getSelectedItems().getFirst();
-       annotateAutomaxoRow(currentRow);
+        // we can only mark one row at a time
+        AutoMaxoRow row = automaxoTableView.getSelectionModel().getSelectedItems().getFirst();
+        annotateAutomaxoRow(row);
     }
 
     @FXML
@@ -698,11 +709,12 @@ public class MainWindowController extends BaseController implements Initializabl
         List<PoetOutputRow> porList = new ArrayList<>(outputRowSet);
         Collections.sort(porList);
         List<String> outputrows = new ArrayList<>();
+        outputrows.add(PoetOutputRow.getHeader());
         for (var row : porList) {
             outputrows.add(row.geTsvLine());
         }
 
-        Optional<Window> opt =   Stage.getWindows().stream().filter(Window::isShowing).findAny();
+        Optional<Window> opt = Stage.getWindows().stream().filter(Window::isShowing).findAny();
         Stage stage;
         stage = (Stage) opt.orElse(null);
         String home = System.getProperty("user.home");

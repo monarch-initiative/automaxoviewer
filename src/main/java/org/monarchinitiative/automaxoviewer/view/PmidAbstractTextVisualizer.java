@@ -49,9 +49,9 @@ public class PmidAbstractTextVisualizer extends MaxoVisualizer  {
         }
         for (var w: words) {
             if (hpoSet.contains(w)) {
-                sb.append("<font color=\"#9900FF\">").append(w).append("</font> ");
+                sb.append("<font color=\"#9900FF\"><b>").append(w).append("</b></font> ");
             } else if (maxoSet.contains(w)) {
-                sb.append("<font color=\"#0099FF\">").append(w).append("</font> ");
+                sb.append("<font color=\"#0099FF\"><b>").append(w).append("</b></font> ");
             } else {
                 sb.append(w).append(" ");
             }

@@ -16,5 +16,6 @@ module org.monarchinitiative.automaxoviewer {
 
     exports org.monarchinitiative.automaxoviewer;
     exports org.monarchinitiative.automaxoviewer.json to com.fasterxml.jackson.databind;
+    opens org.monarchinitiative.automaxoviewer to javafx.base;
 
 }

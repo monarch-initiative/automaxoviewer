@@ -86,6 +86,12 @@ public class ViewFactory {
         }
         Parent parent = opt.get();
         Scene scene = new Scene(parent);
+        URL cssLocation = getClass().getResource("/org/example/pname/styles.css");
+        if (cssLocation == null) {
+            System.out.println("CSS file not found!");
+        } else {
+            System.out.println("CSS file found: " + cssLocation.toExternalForm());
+        }
         Stage stage = new Stage();
         stage.setScene(scene);
         stage.show();

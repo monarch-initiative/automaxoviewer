@@ -18,7 +18,7 @@ public class AutomaxoJsonTest {
         String input = "/Users/robin/GIT/automaxo/data/stickler_syndrome/detailed_post_ontoGPT.json";
         File automaxoFile = new File(input);
         AutomaxoJson automaxo = null;
-        if (automaxoFile != null && automaxoFile.isFile()) {
+        if (automaxoFile.isFile()) {
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
                 automaxo = objectMapper.readValue(automaxoFile, AutomaxoJson.class);

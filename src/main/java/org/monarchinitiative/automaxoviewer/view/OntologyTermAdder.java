@@ -46,7 +46,6 @@ public class OntologyTermAdder extends HBox {
             parentTermLabelStringProperty.bindBidirectional(controller.ontologyTermProperty());
             parentTermReadyProperty.bind(controller.ontologyTermReady());
         } catch (Exception e) {
-            e.printStackTrace();
             LOGGER.error("Error loading OntologyTermAdderController: {}", e.getMessage());
         }
     }

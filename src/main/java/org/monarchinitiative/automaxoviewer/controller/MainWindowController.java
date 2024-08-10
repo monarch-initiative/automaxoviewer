@@ -1,6 +1,7 @@
 package org.monarchinitiative.automaxoviewer.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.HostServices;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -298,7 +299,6 @@ public class MainWindowController extends BaseController implements Initializabl
             failImage = new Image(getClass().getResourceAsStream("/img/fail.png"));
             successImage = new Image(getClass().getResourceAsStream("/img/success.png"));
         } catch (Exception e) {
-            e.printStackTrace();
             LOGGER.error("Error loading images: {}", e.getMessage());
         }
 
@@ -400,7 +400,7 @@ public class MainWindowController extends BaseController implements Initializabl
         });
 
         // Set custom row factory to apply CSS style
-        automaxoTableView.setRowFactory(tv -> new TableRow<AutoMaxoRow>() {
+        automaxoTableView.setRowFactory(tv -> new TableRow<>() {
             @Override
             protected void updateItem(AutoMaxoRow amrow, boolean empty) {
                 super.updateItem(amrow, empty);
@@ -729,6 +729,42 @@ public class MainWindowController extends BaseController implements Initializabl
             }
         } catch (IOException e) {
             PopUps.alertDialog("Could not save Maxo annotations", e.getMessage());
+        }
+    }
+
+    public void ntrMaxo(ActionEvent actionEvent) {
+        Optional<HostServices> opt = viewFactory.getHostervicesOpt();
+        if (opt.isPresent()) {
+            AutoMaxoRow row = model.getCurrentRow();
+            if (row == null) {
+                PopUps.alertDialog("Error", "Mark row for this function");
+                return;
+            }
+            Optional<Term> termOpt = row.maxoTerm();
+            List<String> pmids = row.getAllPmids();
+            String pmidString = String.join("; ", pmids);
+            String bodyOfText;
+            if (termOpt.isPresent()) {
+                Term maxo = termOpt.get();
+                bodyOfText = String.format("Revision for term %s (%s)\n%s",
+                       maxo.getName(), maxo.id().getValue(), pmidString );
+            } else {
+                String candidate = row.getCandidateMaxoLabel();
+                if (candidate.length() > 5) {
+                    bodyOfText = String.format("NTR for %s\n%s", candidate, pmids);
+                } else {
+                    bodyOfText = String.format("NTR (could not parse candidate MAxO label)\n%s", pmids);
+                }
+            }
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+            ClipboardContent content = new ClipboardContent();
+            content.putString(bodyOfText);
+            clipboard.setContent(content);
+            HostServices hostServices = opt.get();
+            final String url = "https://github.com/monarch-initiative/MAxO/issues/";
+            hostServices.showDocument(url);
+        } else {
+            LOGGER.error("Could not find maxo term for issues page");
         }
     }
 }

@@ -61,15 +61,14 @@ public class PmidAbstractTextVisualizer extends MaxoVisualizer  {
 
 
     public String getIntroPara(CurrentItemVisualizable vis) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("<p>").append("Annotation: ").append(vis.getMondoString()).append(": ")
-                .append(vis.getMaxoString()).append(": ").append(vis.getHpoString()).append("</p>");
-        builder.append("<ul style=\"font-size:8px;\">\n");
-        builder.append("<li>Total annotations for this disease: ").append(vis.getTotalAnnots()).append("</li>");
-        builder.append("<li>Input file: ").append(vis.getInputFile()).append("</li>");
-        builder.append("<li>Annotation file: ").append(vis.getAnnotFile()).append("</li>");
-        builder.append("</ul>\n");
-        return builder.toString();
+        String builder = "<p>" + "Annotation: " + vis.getMondoString() + ": " +
+                vis.getMaxoString() + ": " + vis.getHpoString() + "</p>" +
+                "<ul style=\"font-size:8px;\">\n" +
+                "<li>Total annotations for this disease: " + vis.getTotalAnnots() + "</li>" +
+                "<li>Input file: " + vis.getInputFile() + "</li>" +
+                "<li>Annotation file: " + vis.getAnnotFile() + "</li>" +
+                "</ul>\n";
+        return builder;
     }
 
 

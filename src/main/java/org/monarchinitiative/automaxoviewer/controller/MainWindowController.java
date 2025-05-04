@@ -28,10 +28,7 @@ import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
 import org.monarchinitiative.automaxoviewer.json.AutomaxoJson;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 import org.monarchinitiative.automaxoviewer.model.*;
-import org.monarchinitiative.automaxoviewer.view.CurrentItemVisualizable;
-import org.monarchinitiative.automaxoviewer.view.OntologyTermAdder;
-import org.monarchinitiative.automaxoviewer.view.PmidAbstractTextVisualizer;
-import org.monarchinitiative.automaxoviewer.view.ViewFactory;
+import org.monarchinitiative.automaxoviewer.view.*;
 
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
@@ -79,7 +76,8 @@ public class MainWindowController extends BaseController implements Initializabl
     public OntologyTermAdder mondoTermAdder;
     @FXML
     public CheckBox diseaseLevelAnnotationCheckBox;
-
+    @FXML
+    public ChebiTermAdder chebiAdder;
 
     @FXML
     private VBox statusBar;
@@ -227,7 +225,6 @@ public class MainWindowController extends BaseController implements Initializabl
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         LOGGER.trace("Initializing MainWindowController");
-
         //termLabelValidator.setFieldLabel("New Term Label");
         setUpStatusBar();
         setUpKeyAccelerators();
@@ -235,6 +232,11 @@ public class MainWindowController extends BaseController implements Initializabl
         loadOntologies();
         setUpTableView();
         setUpChoiceBox();
+        //setUpChebiAdder();
+    }
+
+    private void setUpChebiAdder() {
+        this.chebiAdder.setUp();
     }
 
 
@@ -285,6 +287,7 @@ public class MainWindowController extends BaseController implements Initializabl
         hpoTermAdder.clearFields();
         maxoTermAdder.clearFields();
         diseaseLevelAnnotCheckBox.setSelected(false);
+        chebiAdder.clearFields();
         /* Don't clear Mondo -- we want to leave the correct disease */
     }
 
@@ -654,6 +657,8 @@ public class MainWindowController extends BaseController implements Initializabl
         Term mondoTerm = mondoTermOpt.get();
         Term maxoTerm = maxoTermOpt.get();
         currentRow.setItemStatus(ItemStatus.ANNOTATED);
+        Optional<Term> chebiOpt = this.chebiAdder.getChebiTerm();
+        chebiOpt.ifPresent(currentRow::setChebi);
         currentRow.setMaxo(maxoTerm);
         if (diseaseLevel) {
             currentRow.setDiseaseLevel(true);
@@ -664,6 +669,12 @@ public class MainWindowController extends BaseController implements Initializabl
         currentRow.setDiseaseTerm(mondoTerm);
         currentRow.setDiseaseLevel(diseaseLevel);
         currentRow.setMaxoRelation(relation);
+        if (chebiOpt.isPresent()) {
+            LOGGER.info("ChEBI was found, setting ChEBI in current row");
+            currentRow.setChebi(chebiOpt.get());
+        } else {
+            LOGGER.info("No ChEBI found for current row");
+        }
         String orcid = model.getOrcid().orElse("n/a");
         outputRowSet.addAll(currentRow.getPoetRows(orcid));
         LOGGER.info("Number of annotations so far {}", outputRowSet.size());
@@ -766,5 +777,18 @@ public class MainWindowController extends BaseController implements Initializabl
         } else {
             LOGGER.error("Could not find maxo term for issues page");
         }
+    }
+
+    public void olsChEBI(ActionEvent actionEvent) {
+        actionEvent.consume();
+        Optional<HostServices> opt = viewFactory.getHostervicesOpt();
+        if (opt.isPresent()) {
+            var hostServices = opt.get();
+            final String url = "https://www.ebi.ac.uk/ols4/ontologies/chebi";
+            hostServices.showDocument(url);
+        } else {
+            LOGGER.error("Could not get HostServices instance");
+        }
+
     }
 }

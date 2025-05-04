@@ -66,6 +66,7 @@ public class PoetOutputRow implements Comparable<PoetOutputRow>{
                          String sourceId,
                          Term maxoTerm,
                          Term hpoTerm,
+                         Term chebiTerm,
                          MaxoRelation maxoRelation,
                          String orcid) {
         List<String> fields = new ArrayList<>();
@@ -80,9 +81,15 @@ public class PoetOutputRow implements Comparable<PoetOutputRow>{
         fields.add(hpoTerm.id().getValue());
         fields.add(maxoRelation.toString());
         fields.add(EVIDENCE_CODE);
-        // We cannot currently add extension id with this tool
-        fields.add(EMPTY_STRING);
-        fields.add(EMPTY_STRING);
+        // extension ID -- currently, we only support ChEBI
+        if (chebiTerm != null) {
+            fields.add(chebiTerm.id().getValue());
+            fields.add(chebiTerm.getName());
+        } else {
+            // No information for extension id
+            fields.add(EMPTY_STRING);
+            fields.add(EMPTY_STRING);
+        }
         // comment,  other
         fields.add(EMPTY_STRING);
         fields.add(EMPTY_STRING);
@@ -129,5 +136,8 @@ public class PoetOutputRow implements Comparable<PoetOutputRow>{
             return this.line.compareTo(other.line);
         }
         return this.maxoLabel.compareTo(other.maxoLabel);
+    }
+
+    public void setChebi(Term chebiTerm) {
     }
 }

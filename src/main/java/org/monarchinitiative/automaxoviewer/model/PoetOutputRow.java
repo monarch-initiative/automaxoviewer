@@ -124,7 +124,7 @@ public class PoetOutputRow implements Comparable<PoetOutputRow>{
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof PoetOutputRow por) {
-            return line.equals(por.line);
+            return line.equals(por.line) && this.maxoLabel.equals(por.maxoLabel);
         } else {
             return false;
         }

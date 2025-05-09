@@ -36,11 +36,11 @@ public class PmidAbstractTextVisualizer extends MaxoVisualizer  {
 
     private String getMarkedUpText(String text, String hpoLabel, String maxoLabel) {
         StringBuilder sb = new StringBuilder();
-        String []words = text.split(("\s+"));
+        String []words = text.split(("\\s+"));
         Set<String> hpoSet = new HashSet<>();
         Set<String> maxoSet = new HashSet<>();
-        String [] hpowords = hpoLabel.split(("\s+"));
-        String [] maxowords = maxoLabel.split(("\s+"));
+        String [] hpowords = hpoLabel.split(("\\s+"));
+        String [] maxowords = maxoLabel.split(("\\s+"));
         for (var w:hpowords) {
             if (! stopWords.contains(w)) hpoSet.add(w);
         }

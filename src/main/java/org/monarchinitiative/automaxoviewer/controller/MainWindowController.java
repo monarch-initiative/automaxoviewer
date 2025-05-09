@@ -232,7 +232,6 @@ public class MainWindowController extends BaseController implements Initializabl
         loadOntologies();
         setUpTableView();
         setUpChoiceBox();
-        //setUpChebiAdder();
     }
 
     private void setUpChebiAdder() {
@@ -368,6 +367,7 @@ public class MainWindowController extends BaseController implements Initializabl
                                 item.setItemStatus(ItemStatus.CANNOT_ANNOTATE);
                                 TableRow<AutoMaxoRow> currentRow = cell.getTableRow();
                                 item.setUnprocessable();
+                                setUnprocessable(item);
                                 currentRow.setStyle(CANNOT_ANNOTATE_COLOR);
                             });
                             cellMenu.getItems().addAll(ghMenuItem, summaryMenuItem, markedFinishedMenuItem);
@@ -549,6 +549,7 @@ public class MainWindowController extends BaseController implements Initializabl
         } else {
             PopUps.alertDialog("Warning", "Could not get automaxo file");
         }
+        checkProbablyFalsePositive();
     }
 
     private void populateTable() {
@@ -687,6 +688,45 @@ public class MainWindowController extends BaseController implements Initializabl
         return true;
     }
 
+    /**
+     * Check the title for common phrases that indicate an article is probably
+     * not relevant (e.g., mouse/mice)
+     */
+    private void checkProbablyFalsePositive() {
+        Set<String> EXCLUDERS = Set.of("mice", "mouse");
+        for (AutoMaxoRow arow : this.automaxoTableView.getItems()) {
+            if (arow.getCitationList().size() > 1) {
+                continue; // do not screen out if we have multiple hits!
+            }
+            PubMedCitation citation = arow.getCitationList().get(0);
+            String title = citation.getTitle().toLowerCase();
+            String[] tokens = title.split("\\s");
+            System.out.println(tokens);
+            for (String token : tokens) {
+
+                if (EXCLUDERS.contains(token)) {
+                    arow.setUnprocessable();
+                    System.out.println("Unprocessable: " + token);
+                }
+            }
+        }
+    }
+
+
+    private void setUnprocessable(AutoMaxoRow row) {
+        List<PubMedCitation> citations = row.getCitationList();
+        Set<TermId> allCitedPmids = citations.stream().map(PubMedCitation::getPmidTermId).collect(Collectors.toSet());
+        for (AutoMaxoRow arow : this.automaxoTableView.getItems()) {
+            var rowcites = arow.getCitationList().stream().map(PubMedCitation::getPmidTermId).toList();
+            for (TermId termId : rowcites) {
+                if (allCitedPmids.contains(termId)) {
+                    arow.setUnprocessable();
+                }
+            }
+        }
+        this.automaxoTableView.refresh();
+    }
+
 
     public void setAnnotatedPmid(AutoMaxoRow row) {
         List<PubMedCitation> citations = row.getCitationList();
@@ -699,6 +739,7 @@ public class MainWindowController extends BaseController implements Initializabl
                 }
             }
         }
+        this.automaxoTableView.refresh();
     }
 
 

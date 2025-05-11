@@ -298,8 +298,8 @@ public class MainWindowController extends BaseController implements Initializabl
         Image successImage = null;
         Image failImage = null;
         try {
-            failImage = new Image(getClass().getResourceAsStream("/img/fail.png"));
-            successImage = new Image(getClass().getResourceAsStream("/img/success.png"));
+            failImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/fail.png")));
+            successImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/success.png")));
         } catch (Exception e) {
             LOGGER.error("Error loading images: {}", e.getMessage());
         }
@@ -693,15 +693,15 @@ public class MainWindowController extends BaseController implements Initializabl
      * not relevant (e.g., mouse/mice)
      */
     private void checkProbablyFalsePositive() {
-        Set<String> EXCLUDERS = Set.of("mice", "mouse");
+        Set<String> EXCLUDERS = Set.of("mice", "mouse", "preclinical");
         for (AutoMaxoRow arow : this.automaxoTableView.getItems()) {
             if (arow.getCitationList().size() > 1) {
                 continue; // do not screen out if we have multiple hits!
             }
-            PubMedCitation citation = arow.getCitationList().get(0);
+            PubMedCitation citation = arow.getCitationList().getFirst();
             String title = citation.getTitle().toLowerCase();
             String[] tokens = title.split("\\s");
-            System.out.println(tokens);
+            System.out.println(Arrays.toString(tokens));
             for (String token : tokens) {
 
                 if (EXCLUDERS.contains(token)) {

@@ -9,15 +9,15 @@ import java.util.stream.Collectors;
 
 public class Triplet {
     
-    private  String maxo;
-    private  String maxo_label;
-    private  String non_grounded_maxo;
-    private  PotentialOntologyTerm[] potential_maxo;
-    private  String relationship;
-    private  String hpo;
-    private  String hpo_label;
-    private  String non_grounded_hpo;
-    private  PotentialOntologyTerm[] potential_hpo;
+    private final String maxo;
+    private final String maxo_label;
+    private final String non_grounded_maxo;
+    private final PotentialOntologyTerm[] potential_maxo;
+    private final String relationship;
+    private final String hpo;
+    private final String hpo_label;
+    private final String non_grounded_hpo;
+    private final PotentialOntologyTerm[] potential_hpo;
     private  String mondo;
     private  String mondo_label;
     private  String non_grounded_mondo;

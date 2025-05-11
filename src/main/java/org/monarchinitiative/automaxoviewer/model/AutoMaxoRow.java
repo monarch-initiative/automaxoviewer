@@ -10,6 +10,8 @@ import org.monarchinitiative.automaxoviewer.json.PotentialOntologyTerm;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -41,6 +43,7 @@ import java.util.stream.Collectors;
  *
  */
 public class AutoMaxoRow implements Serializable {
+    Logger LOGGER = LoggerFactory.getLogger(AutoMaxoRow.class);
     @Serial
     private static final long serialVersionUID = 1L;
     /** This term is used for disease-level annotations */
@@ -79,6 +82,8 @@ public class AutoMaxoRow implements Serializable {
     private final List<PotentialOntologyTerm> potentialMondo;
     private final String maxoQualifier;
     private final String chebi;
+    private Term chebiTerm = null;
+
     private final String hpoExtension;
     private final int count;
     private final List<PubMedCitation> citationList;
@@ -170,6 +175,8 @@ public class AutoMaxoRow implements Serializable {
         return candidateMondoLabel== null ? "": candidateMondoLabel;
     }
 
+    public String getChebiId() { return chebi == null ? "": chebi; }
+
     public String getNonGroundedMondo() {
         return nonGroundedMondo== null ? "": nonGroundedMondo;
     }
@@ -246,7 +253,15 @@ public class AutoMaxoRow implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("[AutoMaxoRow] %s - %s", getCandidateHpoLabel(), getCandidateMaxoLabel());
+        String hpo = getCandidateHpoLabel();
+        String maxo = getCandidateMaxoLabel();
+        String mondo = getCandidateMondoLabel();
+        String chebi = "n/a";
+        if (chebiTerm != null) {
+            chebi = String.format("%s (%s)", chebiTerm.id().getValue(), chebiTerm.getName());
+        }
+        return String.format("[AutoMaxoRow] %s/%s/%s/extension:%s",
+                mondo, hpo, maxo, chebi);
     }
 
 
@@ -387,8 +402,12 @@ public class AutoMaxoRow implements Serializable {
                     pmid,
                     maxoTerm().orElseThrow(),
                     hpoT,
+                    chebiTerm,
                     maxoRelationProperty.get(),
                     orcid);
+            if (this.chebiTerm != null) {
+                row.setChebi(this.chebiTerm);
+            }
             rows.add(row);
         }
         return rows;
@@ -396,10 +415,11 @@ public class AutoMaxoRow implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getSource_id() ,getEvidence(), approvedPmidSet,
-                maxoId,candidateMaxoLabel,nonGroundedMaxo,potentialMaxo,relationship,
-                hpoId, candidateHpoLabel,nonGroundedHpo,potentialHpo,mondoId,candidateMondoLabel,nonGroundedMondo,
-                 potentialMondo, maxoQualifier, count,citationList);
+        return Objects.hash(getSource_id(), getEvidence(), approvedPmidSet,
+                maxoId, candidateMaxoLabel, nonGroundedMaxo,
+                potentialMaxo, relationship, hpoId, candidateHpoLabel,
+                nonGroundedHpo,potentialHpo,mondoId,candidateMondoLabel,nonGroundedMondo,
+                potentialMondo, maxoQualifier, count,citationList);
     }
 
     @Override
@@ -451,4 +471,11 @@ public class AutoMaxoRow implements Serializable {
     public boolean pmidProcessed(){
         return pmidProcessed;
     }
+
+    /** Set the ChEBI term for the extension id/label. Note that the argument can be null */
+    public void setChebi(Term term) {
+        LOGGER.info("Setting chebi: {} ({})", term.getName(), term.id().getValue());
+        this.chebiTerm = term;
+    }
+
 }

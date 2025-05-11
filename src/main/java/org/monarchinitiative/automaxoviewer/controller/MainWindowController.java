@@ -1,6 +1,7 @@
 package org.monarchinitiative.automaxoviewer.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.HostServices;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -27,10 +28,7 @@ import org.monarchinitiative.automaxoviewer.controller.widgets.PopUps;
 import org.monarchinitiative.automaxoviewer.json.AutomaxoJson;
 import org.monarchinitiative.automaxoviewer.json.TripletItem;
 import org.monarchinitiative.automaxoviewer.model.*;
-import org.monarchinitiative.automaxoviewer.view.CurrentItemVisualizable;
-import org.monarchinitiative.automaxoviewer.view.OntologyTermAdder;
-import org.monarchinitiative.automaxoviewer.view.PmidAbstractTextVisualizer;
-import org.monarchinitiative.automaxoviewer.view.ViewFactory;
+import org.monarchinitiative.automaxoviewer.view.*;
 
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.MinimalOntology;
@@ -78,7 +76,8 @@ public class MainWindowController extends BaseController implements Initializabl
     public OntologyTermAdder mondoTermAdder;
     @FXML
     public CheckBox diseaseLevelAnnotationCheckBox;
-
+    @FXML
+    public ChebiTermAdder chebiAdder;
 
     @FXML
     private VBox statusBar;
@@ -226,7 +225,6 @@ public class MainWindowController extends BaseController implements Initializabl
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         LOGGER.trace("Initializing MainWindowController");
-
         //termLabelValidator.setFieldLabel("New Term Label");
         setUpStatusBar();
         setUpKeyAccelerators();
@@ -234,6 +232,10 @@ public class MainWindowController extends BaseController implements Initializabl
         loadOntologies();
         setUpTableView();
         setUpChoiceBox();
+    }
+
+    private void setUpChebiAdder() {
+        this.chebiAdder.setUp();
     }
 
 
@@ -284,6 +286,7 @@ public class MainWindowController extends BaseController implements Initializabl
         hpoTermAdder.clearFields();
         maxoTermAdder.clearFields();
         diseaseLevelAnnotCheckBox.setSelected(false);
+        chebiAdder.clearFields();
         /* Don't clear Mondo -- we want to leave the correct disease */
     }
 
@@ -295,10 +298,9 @@ public class MainWindowController extends BaseController implements Initializabl
         Image successImage = null;
         Image failImage = null;
         try {
-            failImage = new Image(getClass().getResourceAsStream("/img/fail.png"));
-            successImage = new Image(getClass().getResourceAsStream("/img/success.png"));
+            failImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/fail.png")));
+            successImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/img/success.png")));
         } catch (Exception e) {
-            e.printStackTrace();
             LOGGER.error("Error loading images: {}", e.getMessage());
         }
 
@@ -365,6 +367,7 @@ public class MainWindowController extends BaseController implements Initializabl
                                 item.setItemStatus(ItemStatus.CANNOT_ANNOTATE);
                                 TableRow<AutoMaxoRow> currentRow = cell.getTableRow();
                                 item.setUnprocessable();
+                                setUnprocessable(item);
                                 currentRow.setStyle(CANNOT_ANNOTATE_COLOR);
                             });
                             cellMenu.getItems().addAll(ghMenuItem, summaryMenuItem, markedFinishedMenuItem);
@@ -400,7 +403,7 @@ public class MainWindowController extends BaseController implements Initializabl
         });
 
         // Set custom row factory to apply CSS style
-        automaxoTableView.setRowFactory(tv -> new TableRow<AutoMaxoRow>() {
+        automaxoTableView.setRowFactory(tv -> new TableRow<>() {
             @Override
             protected void updateItem(AutoMaxoRow amrow, boolean empty) {
                 super.updateItem(amrow, empty);
@@ -546,6 +549,7 @@ public class MainWindowController extends BaseController implements Initializabl
         } else {
             PopUps.alertDialog("Warning", "Could not get automaxo file");
         }
+        checkProbablyFalsePositive();
     }
 
     private void populateTable() {
@@ -654,6 +658,8 @@ public class MainWindowController extends BaseController implements Initializabl
         Term mondoTerm = mondoTermOpt.get();
         Term maxoTerm = maxoTermOpt.get();
         currentRow.setItemStatus(ItemStatus.ANNOTATED);
+        Optional<Term> chebiOpt = this.chebiAdder.getChebiTerm();
+        chebiOpt.ifPresent(currentRow::setChebi);
         currentRow.setMaxo(maxoTerm);
         if (diseaseLevel) {
             currentRow.setDiseaseLevel(true);
@@ -664,6 +670,12 @@ public class MainWindowController extends BaseController implements Initializabl
         currentRow.setDiseaseTerm(mondoTerm);
         currentRow.setDiseaseLevel(diseaseLevel);
         currentRow.setMaxoRelation(relation);
+        if (chebiOpt.isPresent()) {
+            LOGGER.info("ChEBI was found, setting ChEBI in current row");
+            currentRow.setChebi(chebiOpt.get());
+        } else {
+            LOGGER.info("No ChEBI found for current row");
+        }
         String orcid = model.getOrcid().orElse("n/a");
         outputRowSet.addAll(currentRow.getPoetRows(orcid));
         LOGGER.info("Number of annotations so far {}", outputRowSet.size());
@@ -674,6 +686,45 @@ public class MainWindowController extends BaseController implements Initializabl
         setAnnotatedPmid(currentRow);
         clearFields();
         return true;
+    }
+
+    /**
+     * Check the title for common phrases that indicate an article is probably
+     * not relevant (e.g., mouse/mice)
+     */
+    private void checkProbablyFalsePositive() {
+        Set<String> EXCLUDERS = Set.of("mice", "mouse", "preclinical");
+        for (AutoMaxoRow arow : this.automaxoTableView.getItems()) {
+            if (arow.getCitationList().size() > 1) {
+                continue; // do not screen out if we have multiple hits!
+            }
+            PubMedCitation citation = arow.getCitationList().getFirst();
+            String title = citation.getTitle().toLowerCase();
+            String[] tokens = title.split("\\s");
+            System.out.println(Arrays.toString(tokens));
+            for (String token : tokens) {
+
+                if (EXCLUDERS.contains(token)) {
+                    arow.setUnprocessable();
+                    System.out.println("Unprocessable: " + token);
+                }
+            }
+        }
+    }
+
+
+    private void setUnprocessable(AutoMaxoRow row) {
+        List<PubMedCitation> citations = row.getCitationList();
+        Set<TermId> allCitedPmids = citations.stream().map(PubMedCitation::getPmidTermId).collect(Collectors.toSet());
+        for (AutoMaxoRow arow : this.automaxoTableView.getItems()) {
+            var rowcites = arow.getCitationList().stream().map(PubMedCitation::getPmidTermId).toList();
+            for (TermId termId : rowcites) {
+                if (allCitedPmids.contains(termId)) {
+                    arow.setUnprocessable();
+                }
+            }
+        }
+        this.automaxoTableView.refresh();
     }
 
 
@@ -688,6 +739,7 @@ public class MainWindowController extends BaseController implements Initializabl
                 }
             }
         }
+        this.automaxoTableView.refresh();
     }
 
 
@@ -730,5 +782,54 @@ public class MainWindowController extends BaseController implements Initializabl
         } catch (IOException e) {
             PopUps.alertDialog("Could not save Maxo annotations", e.getMessage());
         }
+    }
+
+    public void ntrMaxo(ActionEvent actionEvent) {
+        Optional<HostServices> opt = viewFactory.getHostervicesOpt();
+        if (opt.isPresent()) {
+            AutoMaxoRow row = model.getCurrentRow();
+            if (row == null) {
+                PopUps.alertDialog("Error", "Mark row for this function");
+                return;
+            }
+            Optional<Term> termOpt = row.maxoTerm();
+            List<String> pmids = row.getAllPmids();
+            String pmidString = String.join("; ", pmids);
+            String bodyOfText;
+            if (termOpt.isPresent()) {
+                Term maxo = termOpt.get();
+                bodyOfText = String.format("Revision for term %s (%s)\n%s",
+                       maxo.getName(), maxo.id().getValue(), pmidString );
+            } else {
+                String candidate = row.getCandidateMaxoLabel();
+                if (candidate.length() > 5) {
+                    bodyOfText = String.format("NTR for %s\n%s", candidate, pmids);
+                } else {
+                    bodyOfText = String.format("NTR (could not parse candidate MAxO label)\n%s", pmids);
+                }
+            }
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+            ClipboardContent content = new ClipboardContent();
+            content.putString(bodyOfText);
+            clipboard.setContent(content);
+            HostServices hostServices = opt.get();
+            final String url = "https://github.com/monarch-initiative/MAxO/issues/";
+            hostServices.showDocument(url);
+        } else {
+            LOGGER.error("Could not find maxo term for issues page");
+        }
+    }
+
+    public void olsChEBI(ActionEvent actionEvent) {
+        actionEvent.consume();
+        Optional<HostServices> opt = viewFactory.getHostervicesOpt();
+        if (opt.isPresent()) {
+            var hostServices = opt.get();
+            final String url = "https://www.ebi.ac.uk/ols4/ontologies/chebi";
+            hostServices.showDocument(url);
+        } else {
+            LOGGER.error("Could not get HostServices instance");
+        }
+
     }
 }

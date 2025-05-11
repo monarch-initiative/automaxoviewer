@@ -17,8 +17,8 @@ import org.monarchinitiative.automaxoviewer.model.OntologyRosettaStone;
 import org.monarchinitiative.phenol.ontology.data.Term;
 
 import java.net.URL;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Controller for a widget that allows the user to select parent terms by autocomplete or
@@ -36,6 +36,12 @@ public class OntologyTermAdderController implements Initializable {
     private Button addButton;
 
     @FXML
+    private Button addMostCommandButton;
+
+    @FXML
+    private Button add2MostCommandButton;
+
+    @FXML
     private Label ontologyTermErrorLabel;
 
     private final BooleanProperty ontologyTermReadyProperty = new SimpleBooleanProperty(false);
@@ -44,8 +50,11 @@ public class OntologyTermAdderController implements Initializable {
 
     private OntologyRosettaStone rosettaStone = null;
 
+    private HashMap<String, Integer> termUsageCount;
+
     public OntologyTermAdderController() {
         ontologTermLabelProperty = new SimpleStringProperty();
+        termUsageCount = new HashMap<>();
     }
 
     @Override
@@ -62,15 +71,52 @@ public class OntologyTermAdderController implements Initializable {
                 setInvalid(errmsg);
                 return;
             }
-            ontologTermLabelProperty.set(opt.get().getName());
+            String label = opt.get().getName();
+            ontologTermLabelProperty.set(label);
+            incrementCommonLabel(label);
             textField.clear();
             setValid(getErrorLabel());
+            setCommonLabel();
         });
         addButton.setStyle("-fx-spacing: 10;");
         Font largeFont = Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18);
         ontologyTermLabel.setFont(largeFont);
         ontologyTermReadyProperty.bind(ontologTermLabelProperty.length().greaterThan(0));
         setInvalid();
+        addMostCommandButton.setOnAction(e -> {
+            List<String> commons = getTopTwoLabels();
+            textField.setText(commons.getFirst());
+        });
+        add2MostCommandButton.setOnAction(e -> {
+            List<String> commons = getTopTwoLabels();
+            textField.setText(commons.get(1));
+        });
+    }
+
+    private void setCommonLabel() {
+        List<String> commons = getTopTwoLabels();
+        this.addMostCommandButton.setText(commons.get(0));
+        this.add2MostCommandButton.setText(commons.get(1));
+    }
+
+    private List<String> getTopTwoLabels() {
+        if (termUsageCount.isEmpty()) {
+            return List.of("", "");
+        }
+        List<String> sortedLabels = this.termUsageCount.entrySet().stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue())) // descending order
+                .limit(2)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        if (sortedLabels.size() == 1) {
+            sortedLabels.add("");
+        }
+        return sortedLabels;
+    }
+
+    private void incrementCommonLabel(String label) {
+        this.termUsageCount.putIfAbsent(label, 0);
+        this.termUsageCount.put(label, this.termUsageCount.get(label) + 1);
     }
 
     public void setInvalid() {
